@@ -1,0 +1,67 @@
+# =========================================================
+#  .gitattributes voor Unity + Blender (root van de repo)
+#  Vereist: git lfs install  (eenmalig per computer)
+# =========================================================
+
+# Standaard: tekstbestanden normaliseren (stopt de LF/CRLF-meldingen)
+* text=auto
+
+# --- Unity YAML-bestanden: tekst, altijd LF ---
+*.unity         text eol=lf merge=unityyamlmerge
+*.prefab        text eol=lf merge=unityyamlmerge
+*.asset         text eol=lf merge=unityyamlmerge
+*.mat           text eol=lf merge=unityyamlmerge
+*.anim          text eol=lf merge=unityyamlmerge
+*.controller    text eol=lf merge=unityyamlmerge
+*.overrideController text eol=lf merge=unityyamlmerge
+*.physicMaterial text eol=lf merge=unityyamlmerge
+*.lighting      text eol=lf
+*.meta          text eol=lf
+*.shadergraph   text eol=lf
+*.shadersubgraph text eol=lf
+*.vfx           text eol=lf
+*.inputactions  text eol=lf
+*.cs            text diff=csharp
+*.shader        text
+*.hlsl          text
+*.json          text
+*.md            text
+
+# --- Blender ---
+*.blend         filter=lfs diff=lfs merge=lfs -text lockable
+
+# --- 3D-modellen ---
+*.fbx           filter=lfs diff=lfs merge=lfs -text
+*.obj           filter=lfs diff=lfs merge=lfs -text
+*.glb           filter=lfs diff=lfs merge=lfs -text
+*.gltf          filter=lfs diff=lfs merge=lfs -text
+
+# --- Textures / afbeeldingen ---
+*.png           filter=lfs diff=lfs merge=lfs -text
+*.jpg           filter=lfs diff=lfs merge=lfs -text
+*.jpeg          filter=lfs diff=lfs merge=lfs -text
+*.tga           filter=lfs diff=lfs merge=lfs -text
+*.tif           filter=lfs diff=lfs merge=lfs -text
+*.tiff          filter=lfs diff=lfs merge=lfs -text
+*.psd           filter=lfs diff=lfs merge=lfs -text lockable
+*.kra           filter=lfs diff=lfs merge=lfs -text lockable
+*.exr           filter=lfs diff=lfs merge=lfs -text
+*.hdr           filter=lfs diff=lfs merge=lfs -text
+
+# --- Audio / video ---
+*.wav           filter=lfs diff=lfs merge=lfs -text
+*.mp3           filter=lfs diff=lfs merge=lfs -text
+*.ogg           filter=lfs diff=lfs merge=lfs -text
+*.mp4           filter=lfs diff=lfs merge=lfs -text
+*.mov           filter=lfs diff=lfs merge=lfs -text
+*.webm          filter=lfs diff=lfs merge=lfs -text
+
+# --- Overige binaire Unity-bestanden ---
+*.ttf           filter=lfs diff=lfs merge=lfs -text
+*.otf           filter=lfs diff=lfs merge=lfs -text
+*.cubemap       filter=lfs diff=lfs merge=lfs -text
+*.unitypackage  filter=lfs diff=lfs merge=lfs -text
+LightingData.asset filter=lfs diff=lfs merge=lfs -text
+*.dll           filter=lfs diff=lfs merge=lfs -text
+*.so            filter=lfs diff=lfs merge=lfs -text
+*.aar           filter=lfs diff=lfs merge=lfs -text

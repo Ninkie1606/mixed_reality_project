@@ -1,0 +1,20 @@
+# =========================================================
+#  Root .gitignore (Unity-regels staan in mixed_reality/.gitignore)
+# =========================================================
+
+# --- Blender ---
+*.blend1
+*.blend2
+*.blend@
+/blender/**/renders/
+/blender/**/bake_cache/
+/blender/**/*_cache/
+
+# --- Besturingssysteem ---
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Editors ---
+.vscode/
+.idea/

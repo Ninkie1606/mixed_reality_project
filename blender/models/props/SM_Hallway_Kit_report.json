@@ -1,0 +1,167 @@
+{
+  "SM_Hall_Locker_Single": {
+    "tris": 140,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Metal_Painted",
+      "M_Rubber_Black"
+    ],
+    "size_m": [
+      0.3,
+      0.487,
+      1.8
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_Locker_Row_5": {
+    "tris": 516,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Metal_Painted",
+      "M_Rubber_Black"
+    ],
+    "size_m": [
+      1.5,
+      0.487,
+      1.8
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_Bench": {
+    "tris": 120,
+    "materials": [
+      "M_Metal_Painted",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      1.6,
+      0.4,
+      0.45
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_InfoScreen": {
+    "tris": 24,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Screen"
+    ],
+    "size_m": [
+      1.25,
+      0.075,
+      0.73
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_TrophyCase": {
+    "tris": 106,
+    "materials": [
+      "M_Glass",
+      "M_Metal_Chrome",
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      1.2,
+      0.47,
+      1.9
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_PictureFrame": {
+    "tris": 34,
+    "materials": [
+      "M_Poster",
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      0.6,
+      0.02,
+      0.45
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_Planter": {
+    "tris": 28,
+    "materials": [
+      "M_Concrete",
+      "M_Soil"
+    ],
+    "size_m": [
+      0.5,
+      0.5,
+      0.45
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_Plant": {
+    "tris": 204,
+    "materials": [
+      "M_Plant_Leaf",
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      0.627,
+      0.527,
+      1.03
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_WaterFountain": {
+    "tris": 182,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Metal_White",
+      "M_Plastic_Black"
+    ],
+    "size_m": [
+      0.4,
+      0.375,
+      0.992
+    ],
+    "ucx": 0
+  },
+  "SM_Hall_VendingMachine": {
+    "tris": 516,
+    "materials": [
+      "M_Glass",
+      "M_Paint_Red",
+      "M_Plastic_Black",
+      "M_Plastic_Green",
+      "M_Plastic_White",
+      "M_Plastic_Yellow",
+      "M_Screen"
+    ],
+    "size_m": [
+      0.9,
+      0.812,
+      1.85
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Trophy_A": {
+    "tris": 288,
+    "materials": [
+      "M_Metal_Gold",
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      0.15,
+      0.11,
+      0.25
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Trophy_B": {
+    "tris": 92,
+    "materials": [
+      "M_Metal_Gold",
+      "M_Plastic_Black"
+    ],
+    "size_m": [
+      0.08,
+      0.08,
+      0.216
+    ],
+    "ucx": 0
+  }
+}

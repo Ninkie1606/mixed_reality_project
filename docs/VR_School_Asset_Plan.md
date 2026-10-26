@@ -25,6 +25,8 @@ Blender (procedureel, opnieuw draaien = alles opnieuw bouwen + exporteren):
 - `blender/tools/build_modular_kit.py` — Fase 1 gebouwkit → `models/environment/SM_Build_Kit.blend`. Bevat ook de gedeelde helpers:
   `MB` (box, cyl, lathe, grid_panel, profile_x, mark/transform_since) en `build_kit(...)` (unwrap UV0/UV1, `uv_fill`, rapport, export).
 - `blender/tools/build_classroom_kit.py` — Fase 2 klaslokaal → `models/props/SM_Classroom_Kit.blend`; exporteert naar `Art/Classroom` en `Art/Props`.
+- `blender/tools/build_hallway_kit.py` — Fase 3 gang → `models/props/SM_Hallway_Kit.blend`; exporteert naar `Art/Hallway` en `Art/Props`
+  (laadt `build_classroom_kit.py` in, dus alle materialen/helpers van Fase 1 + 2).
 - Elke run schrijft `<blend>_report.json` (tris, materialen, maten per asset).
 
 Unity (`Assets/Scripts/`):
@@ -32,6 +34,7 @@ Unity (`Assets/Scripts/`):
 - `Editor/VRSchoolBuildCore.cs` — gedeeld: materiaaltabel (URP/Lit), material-remap, prefab-inrichting per `Kind`, asconversie, plaatsingshulpen (`Run`, `Spawn`, `Facing`, showcase, XR Origin).
 - `Editor/VRSchoolKitBuilder.cs` — menu **VR School → Build Phase 1 - Modular Kit** (prefabs + `Test_Modular`).
 - `Editor/VRSchoolClassroomBuilder.cs` — menu **VR School → Build Phase 2 - Classroom** (prefabs + `Classroom_01`). Vereist Fase 1.
+- `Editor/VRSchoolHallwayBuilder.cs` — menu **VR School → Build Phase 3 - Hallway** (prefabs + `Hallway_01`). Vereist Fase 1.
 - `Interaction/SwingDoor.cs` — deur draait rond scharnierpivot; elke XR-interactable in de deur togglet open/dicht.
 - `Interaction/WallClock.cs` — klokwijzers op systeemtijd of een vaste tijd (`fixedTime`, bv. `08:25`).
 - Prefabs zijn *model-variants*: een nieuwe FBX-export uit Blender werkt ze automatisch bij. Builders opnieuw draaien is veilig (GUID's blijven).
@@ -191,15 +194,46 @@ rugzakken/vuilbak/brandblusser), klok draait met de klok mee (3 uur = rechts). *
 
 ---
 
-## 4. Fase 3 — Gang (prioriteit MIDDEL)
+## 4. Fase 3 — Gang (prioriteit MIDDEL) ✅
 
-- [ ] `SM_Hall_Locker_Single` (deur apart, scharnierpivot) + `SM_Hall_Locker_Row_5`
-- [ ] `SM_Hall_Bench`
-- [ ] `SM_Hall_InfoScreen`
-- [ ] `SM_Hall_TrophyCase` + `SM_Prop_Trophy_A/B`
-- [ ] `SM_Hall_PictureFrame`
-- [ ] `SM_Hall_Planter` + `SM_Hall_Plant`
-- [ ] `SM_Hall_WaterFountain`, `SM_Hall_VendingMachine`
+- [x] `SM_Hall_Locker_Single` (deur apart, scharnierpivot) + `SM_Hall_Locker_Row_5`
+- [x] `SM_Hall_Bench`
+- [x] `SM_Hall_InfoScreen`
+- [x] `SM_Hall_TrophyCase` + `SM_Prop_Trophy_A/B`
+- [x] `SM_Hall_PictureFrame`
+- [x] `SM_Hall_Planter` + `SM_Hall_Plant`
+- [x] `SM_Hall_WaterFountain`, `SM_Hall_VendingMachine`
+
+**Unity**: [x] scene `Scenes/Hallway_01` (16 × 4 m): noordwand met 2 klasdeuren en 22 lockers (4 × Row_5 + 2 × Single),
+zuidwand met 4 ramen + radiatoren, 2 banken, trofeeënkast (9 trofeeën op onderkast en glasplaten), infoscherm, drankautomaat
+en fontein; west dubbele deur (ingang), oost nooddeur, exit-borden, 3 plantenbakken, TL's, rookmelders + showcase-rij + XR Origin.
+
+### Ontwerpkeuzes Fase 3
+- **Tegen de muur staande meubels** (lockers, vitrine, fontein, automaat): pivot **achteraan-midden op de vloer** → direct op het
+  muuroppervlak plaatsen met `Facing(...)`. Bank, plantenbak en plant: onderaan-midden. Infoscherm en fotokader: achteraan-midden in het centrum.
+- **Lockers zijn open kasten**: elk vak heeft een binnenruimte + hoedenplank (MeshCollider) → er kan later iets in. Deuren zijn children
+  `<naam>_Door` / `_Door_N` met pivot op het scharnier; in Unity krijgt elke deur `SwingDoor` (+95°, opent naar de gang) +
+  `XRSimpleInteractable` + kinematic Rigidbody (nieuw `Kind.Locker`).
+- Beeldvlakken (`_Screen` van het infoscherm, `_Picture` van het fotokader) zijn aparte children met UV 0..1, zoals bij de poster.
+- Plant staat los van de bak (zet hem op bak-hoogte + 0,40 m); zo kan dezelfde plant ook elders staan.
+- Nieuwe materialen: `M_Metal_Gold`, `M_Soil`, `M_Plant_Leaf` (Blender + `VRSchoolBuildCore`).
+
+### Kwaliteitscheck Fase 3
+| Asset | Tris | Mat. | Maat (m) | Unity |
+|---|---|---|---|---|
+| Locker_Single / Locker_Row_5 | 140 / 516 | 3 | 0,3 / 1,5 × 0,49 × 1,8 | kast static + MeshCollider; deuren SwingDoor + XRSimpleInteractable |
+| Bench | 120 | 2 | 1,6×0,4×0,45 | static, box |
+| InfoScreen | 24 | 2 | 1,25×0,73 | static |
+| TrophyCase | 106 | 3 (hout, glas, chroom) | 1,2×0,47×1,9 | static, MeshCollider (trofeeën op de glasplaten) |
+| PictureFrame | 34 | 2 | 0,6×0,45 | static |
+| Planter / Plant | 28 / 204 | 2 / 2 | 0,5×0,5×0,45 / Ø 0,6 × 1,03 | static |
+| WaterFountain | 182 | 3 | 0,4×0,38×0,99 | static |
+| VendingMachine | 516 | 7 | 0,9×0,81×1,85 | static |
+| Trophy_A / Trophy_B | 288 / 92 | 2 | 25 / 22 cm | grab 0,8 / 0,5 kg |
+
+Getest: compile zonder fouten, alle 22 lockerdeuren in de gang draaien naar de gang toe (gemeten), Play mode 0 fouten:
+alle 33 SwingDoors (lockers, klas-, dubbele en nooddeur) openen via script, de 9 trofeeën blijven op hun plank liggen.
+**Nog niet in de headset getest.**
 
 ---
 
@@ -256,7 +290,8 @@ Basisset materialen in Blender (gedeeld over assets) én als URP/Lit in Unity in
 - [ ] `M_Grass`, `M_Asphalt`
 - *(extra, Fase 1)* `M_Metal_White`, `M_Plastic_White`, `M_Rubber_Black`, `M_Paint_Red`, `M_Emissive_Light`, `M_ExitSign`
 - *(extra, Fase 2)* `M_Plastic_Black/Yellow/Green/Pink`, `M_Screen`, `M_Paper`, `M_Cork`, `M_Fabric_Blue/Red/Dark`, `M_Poster`, `M_WorldMap`
-- Alle 29 materialen zijn nog effen kleuren (geen textures).
+- *(extra, Fase 3)* `M_Metal_Gold`, `M_Soil`, `M_Plant_Leaf`
+- Alle 32 materialen zijn nog effen kleuren (geen textures).
 
 Bronnen voor PBR-textures: Poly Haven / ambientCG (CC0). Download handmatig of via script naar `Assets/Art/Textures/`.
 Architectuur heeft UV0 op **wereldschaal (1 UV = 1 m)** → tileable textures lopen door over modules.
@@ -365,3 +400,11 @@ Na elke fase:
 - **Boekenrekken** zijn leeg; vullen met `SM_Prop_Book_*` (MeshCollider laat dat toe) of een gecombineerde "boekenrij"-mesh voor minder draw calls.
 - **Draw calls**: 82 losse props met elk 1–4 materialen in één klas → in de Profiler nakijken; eventueel GPU instancing aanzetten op de materialen of props statisch batchen tot ze opgepakt worden.
 - **Laptopdeksel** zit vast in de prefab (open of dicht); open/dicht klappen in VR vraagt een hinge-script zoals `SwingDoor`.
+
+### Fase 3
+- **VR-test**: lockerdeuren openen met controller/hand (hele deur is de interactable, geen aparte klink), trofeeën uit de vitrine halen.
+- **Vitrine** heeft geen deurtjes in het glas: trofeeën zijn alleen met de ray-interactor (door het glas) te pakken. Glazen schuifdeur toevoegen indien nodig.
+- **Drankautomaat** gebruikt 7 materialen (producten geel/groen, glas, scherm, toetsen) → kandidaat nr. 1 voor een atlas zodra er textures zijn.
+- **Infoscherm** (`M_Screen`) is zwart en het **fotokader** deelt `M_Poster` met de posterkaders → eigen texture/RenderTexture per instantie voorzien.
+- **Klasdeuren in de gang** openen naar de gangzijde (zelfde prefab als in Classroom_01); de gang hangt nog niet aan een klaslokaal vast.
+- Geen geluid/feedback bij lockers (locker dichtslaan staat bij §10 Audio).

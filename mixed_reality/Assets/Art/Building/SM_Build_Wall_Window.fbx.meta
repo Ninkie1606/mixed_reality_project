@@ -7,8 +7,18 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Chalkboard
+    second: {fileID: 2100000, guid: 32200f3870394674aaf7ad7b97cada52, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Concrete
     second: {fileID: 2100000, guid: 83965664e6c96514ab643b53584e4380, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Cork
+    second: {fileID: 2100000, guid: 50b985dda39ac71429a53b6a192e5cf0, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -19,6 +29,21 @@ ModelImporter:
       assembly: UnityEngine.CoreModule
       name: M_ExitSign
     second: {fileID: 2100000, guid: 57c84c35bd2ee4a4695fc2e892cb517b, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Fabric_Blue
+    second: {fileID: 2100000, guid: 54babf92b06f16443bb4e93743c2425f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Fabric_Dark
+    second: {fileID: 2100000, guid: 16923c32cf815e545aaa9e43e1b3f430, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Fabric_Red
+    second: {fileID: 2100000, guid: fb24a7bbb30c78f4fa7ac759bdcde3f4, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -52,8 +77,43 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Paper
+    second: {fileID: 2100000, guid: 2d4b37852555e7c42a805ef1f23ce965, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Plastic_Black
+    second: {fileID: 2100000, guid: 2512cc2053e0cf54fb9a6ee50f5fee0c, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Plastic_Chair
+    second: {fileID: 2100000, guid: f6d57cc5c4c3e8749859b2e8beb30395, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Plastic_Green
+    second: {fileID: 2100000, guid: d08c6c163e14e6a44bb0136e2ce628c5, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Plastic_Pink
+    second: {fileID: 2100000, guid: 8318b3ed446e74b479379044c556c2f7, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Plastic_White
     second: {fileID: 2100000, guid: 22ca72c1acc5e1346b68fe6abdf94e8a, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Plastic_Yellow
+    second: {fileID: 2100000, guid: 44e01b01bc246064599756722c2c4ec4, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Poster
+    second: {fileID: 2100000, guid: bda4dc50fd3acc042a66af0533cf998c, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
@@ -62,13 +122,33 @@ ModelImporter:
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Screen
+    second: {fileID: 2100000, guid: 1168ddde7e2457144bd66725663ac948, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Wall_Paint_White
     second: {fileID: 2100000, guid: 8834eff7ffbbb834390b1ec081b4f356, type: 2}
   - first:
       type: UnityEngine:Material
       assembly: UnityEngine.CoreModule
+      name: M_Whiteboard
+    second: {fileID: 2100000, guid: 6a70dad9b5f1bd948a8c50f629b6c39f, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_Wood_Dark
+    second: {fileID: 2100000, guid: 9e68277d1e30b6e4183d7e2877152d86, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
       name: M_Wood_Light
     second: {fileID: 2100000, guid: 2be0e0ec47cda12478fe4abdca8a759e, type: 2}
+  - first:
+      type: UnityEngine:Material
+      assembly: UnityEngine.CoreModule
+      name: M_WorldMap
+    second: {fileID: 2100000, guid: f826602c5261e3d43a7edc65f7fdaaec, type: 2}
   materials:
     materialImportMode: 2
     materialName: 0

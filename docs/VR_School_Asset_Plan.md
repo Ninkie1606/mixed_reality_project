@@ -20,11 +20,22 @@ Werk de fases in volgorde af en vink items af (`- [x]`) zodra ze klaar en gecont
   2. `unity status` → Editor in state `ready`; `unity command scene list_open`.
   3. Exportmap bestaat en is schrijfbaar.
 
-### Tooling (Fase 1)
-- `blender/tools/build_modular_kit.py` — bouwt de hele gebouwkit procedureel, slaat `SM_Build_Kit.blend` op en exporteert 1 FBX per asset. Schrijft ook `SM_Build_Kit_report.json` (tris, materialen, maten).
-- `Assets/Scripts/Editor/VRSchoolModelPostprocessor.cs` — import-instellingen voor alle FBX onder `Assets/Art/`, zet `UCX_`-meshes om naar onzichtbare BoxCollider-children.
-- `Assets/Scripts/Editor/VRSchoolKitBuilder.cs` — menu **VR School → Build Phase 1 - Modular Kit**: URP-materialen, material-remap, prefabs (als *model-variant*, dus volgen ze een nieuwe FBX-export automatisch), testscene. Opnieuw draaien is veilig.
-- `Assets/Scripts/Interaction/SwingDoor.cs` — draait een deur rond zijn scharnierpivot; elke XR-interactable in de deur togglet open/dicht.
+### Tooling
+Blender (procedureel, opnieuw draaien = alles opnieuw bouwen + exporteren):
+- `blender/tools/build_modular_kit.py` — Fase 1 gebouwkit → `models/environment/SM_Build_Kit.blend`. Bevat ook de gedeelde helpers:
+  `MB` (box, cyl, lathe, grid_panel, profile_x, mark/transform_since) en `build_kit(...)` (unwrap UV0/UV1, `uv_fill`, rapport, export).
+- `blender/tools/build_classroom_kit.py` — Fase 2 klaslokaal → `models/props/SM_Classroom_Kit.blend`; exporteert naar `Art/Classroom` en `Art/Props`.
+- Elke run schrijft `<blend>_report.json` (tris, materialen, maten per asset).
+
+Unity (`Assets/Scripts/`):
+- `Editor/VRSchoolModelPostprocessor.cs` — import-instellingen voor alle FBX onder `Assets/Art/`, `UCX_` → onzichtbare BoxCollider-children.
+- `Editor/VRSchoolBuildCore.cs` — gedeeld: materiaaltabel (URP/Lit), material-remap, prefab-inrichting per `Kind`, asconversie, plaatsingshulpen (`Run`, `Spawn`, `Facing`, showcase, XR Origin).
+- `Editor/VRSchoolKitBuilder.cs` — menu **VR School → Build Phase 1 - Modular Kit** (prefabs + `Test_Modular`).
+- `Editor/VRSchoolClassroomBuilder.cs` — menu **VR School → Build Phase 2 - Classroom** (prefabs + `Classroom_01`). Vereist Fase 1.
+- `Interaction/SwingDoor.cs` — deur draait rond scharnierpivot; elke XR-interactable in de deur togglet open/dicht.
+- `Interaction/WallClock.cs` — klokwijzers op systeemtijd of een vaste tijd (`fixedTime`, bv. `08:25`).
+- Prefabs zijn *model-variants*: een nieuwe FBX-export uit Blender werkt ze automatisch bij. Builders opnieuw draaien is veilig (GUID's blijven).
+- ⚠ Een builder bewaart zijn scene opnieuw: open dan eerst een andere scene (anders botst het met de open scene).
 
 ---
 
@@ -123,26 +134,60 @@ Getest: compile zonder fouten, Play mode zonder fouten, alle 6 SwingDoors draaie
 
 ---
 
-## 3. Fase 2 — Klaslokaal (prioriteit HOOG)
+## 3. Fase 2 — Klaslokaal (prioriteit HOOG) ✅
 
-- [ ] `SM_Class_Desk_A` (leerlingenbank), `SM_Class_Chair_A`
-- [ ] `SM_Class_TeacherDesk`, `SM_Class_OfficeChair`
-- [ ] `SM_Class_Chalkboard`, `SM_Class_Whiteboard`, `SM_Class_SmartBoard`
-- [ ] `SM_Class_Projector`, `SM_Class_ProjectorScreen`
-- [ ] `SM_Class_Cabinet`, `SM_Class_Bookshelf`, `SM_Class_CoatRack`
-- [ ] `SM_Class_TrashBin`, `SM_Class_WallClock`
-- [ ] `SM_Class_Laptop` (open/dicht), `SM_Class_PC_Monitor`, `SM_Class_Keyboard`
-- [ ] `SM_Class_Corkboard` + `SM_Class_PaperNote` (losse briefjes)
-- [ ] `SM_Class_Poster_Frame` (vlak voor wisselbare poster-textures), `SM_Class_WorldMap`
+- [x] `SM_Class_Desk_A` (leerlingenbank), `SM_Class_Chair_A`
+- [x] `SM_Class_TeacherDesk`, `SM_Class_OfficeChair`
+- [x] `SM_Class_Chalkboard`, `SM_Class_Whiteboard`, `SM_Class_SmartBoard`
+- [x] `SM_Class_Projector`, `SM_Class_ProjectorScreen`
+- [x] `SM_Class_Cabinet`, `SM_Class_Bookshelf`, `SM_Class_CoatRack`
+- [x] `SM_Class_TrashBin`, `SM_Class_WallClock`
+- [x] `SM_Class_Laptop` (open/dicht), `SM_Class_PC_Monitor`, `SM_Class_Keyboard`
+- [x] `SM_Class_Corkboard` + `SM_Class_PaperNote` (losse briefjes)
+- [x] `SM_Class_Poster_Frame` (vlak voor wisselbare poster-textures), `SM_Class_WorldMap`
 
 **Kleine grab-props** (moeten oppakbaar zijn in VR → simpele box/capsule-collider):
-- [ ] `SM_Prop_Book_A/B/C`, `SM_Prop_Notebook`
-- [ ] `SM_Prop_Pen`, `SM_Prop_Pencil`, `SM_Prop_Eraser`, `SM_Prop_Ruler`
-- [ ] `SM_Prop_Calculator`, `SM_Prop_PencilCase`
-- [ ] `SM_Prop_Backpack_A/B`, `SM_Prop_WaterBottle`
-- [ ] `SM_Prop_Chalk`, `SM_Prop_Marker`
+- [x] `SM_Prop_Book_A/B/C`, `SM_Prop_Notebook`
+- [x] `SM_Prop_Pen`, `SM_Prop_Pencil`, `SM_Prop_Eraser`, `SM_Prop_Ruler`
+- [x] `SM_Prop_Calculator`, `SM_Prop_PencilCase`
+- [x] `SM_Prop_Backpack_A/B`, `SM_Prop_WaterBottle`
+- [x] `SM_Prop_Chalk`, `SM_Prop_Marker`
 
-**Unity**: scene `Scenes/Classroom_01` opbouwen met 24 banken + leraarsplek.
+**Unity**: [x] scene `Scenes/Classroom_01` (10 × 8 m) met 24 banken (3 duo-kolommen × 4 rijen) + leraarsplek, bordwand
+(smartboard, krijtbord, whiteboard + projectiescherm, klok), 4 ramen met radiatoren, deur, prikbord met briefjes, kapstok,
+boekenrekken/kast/wereldkaart/posters achteraan, 82 losse props (reproduceerbaar verspreid, seed 42) + showcase-rij + XR Origin.
+
+### Ontwerpkeuzes Fase 2
+- **Voorkant = −Y in Blender = +Z in Unity** voor alles: zitkant van bank/bureau, kijkrichting van stoelen, beeldvlak van borden/schermen.
+  In de scene plaats je met `Facing(richting)`.
+- Wandobjecten: pivot achteraan-midden; **borden/smartboard aan de onderrand** (y = montagehoogte, hier 0,90 m).
+- Bewegende delen = aparte children: laptopdeksel (scharnier), klokwijzers, projectiedoek (pivot bovenrand → lokaal Y schalen = oprollen).
+- Laptop: één model, twee prefabs (`SM_Class_Laptop` open 110°, `SM_Class_Laptop_Closed`).
+- Poster en wereldkaart: het beeldvlak is een apart child met UV 0..1 (`M_Poster`, `M_WorldMap`) → texture/materiaal wisselen zonder het kader te raken.
+- Colliders: borden en boekenrek krijgen een **MeshCollider** (krijt/stiften liggen in de goot, boeken op de planken); andere meubels een BoxCollider.
+- **Geen LOD's**: alle meubels zitten ver onder het budget (max 394 tris); een LOD1 op ~100 tris levert niets op en kost een extra draw-pad.
+
+### Kwaliteitscheck Fase 2
+| Asset | Tris | Mat. | Maat (m) | Unity |
+|---|---|---|---|---|
+| Desk_A / Chair_A | 90 / 84 | 2 / 2 | 0,7×0,5×0,76 / 0,4×0,46×0,8 | static, box |
+| TeacherDesk / OfficeChair | 98 / 296 | 2 / 3 | 1,4×0,7×0,75 / 0,6×0,6×1,06 | static, box |
+| Chalkboard / Whiteboard / SmartBoard | 64 / 64 / 30 | 2 | 3,08×1,3 / 2,44×1,26 / 1,95×1,23 | static, MeshCollider |
+| Projector / ProjectorScreen | 72 / 66 | 3 | 0,3×0,27×0,42 / 2×1,52 | static (doek niet) |
+| Cabinet / Bookshelf / CoatRack | 72 / 66 / 178 | 3 / 1 / 2 | 1×0,48×1 / 0,9×0,32×1,8 / 1,2 | static |
+| TrashBin | 128 | 1 | 0,32×0,36 | grab 1,5 kg |
+| WallClock | 394 | 3 | Ø 0,31 | static + WallClock (wijzers dynamisch) |
+| Laptop (open/dicht) / PC_Monitor / Keyboard | 54 / 44 / 162 | 3 / 2 / 2 | 0,32×0,22 / 0,54×0,44 / 0,44×0,14 | grab 1,5 kg / static / static |
+| Corkboard / PaperNote | 42 / 34 | 2 | 1,26×0,96 / A6 | static / grab, kinematic (blijft hangen) |
+| Poster_Frame / WorldMap | 34 / 58 | 2 | A1 / 1,72×1,06 | static |
+| Book_A/B/C / Notebook | 38 | 2 | 17×24 / A4 / 15×21 cm / A4 | grab |
+| Pen / Pencil / Eraser / Ruler | 48 / 52 / 12 / 12 | 2 / 4 / 1 / 1 | 14 / 18 / 5 / 30 cm | grab (capsule / box) |
+| Calculator / PencilCase | 222 / 52 | 3 / 2 | 8×16 / 20×7 cm | grab |
+| Backpack_A/B / WaterBottle | 100 / 164 | 3 / 2 | 0,3×0,25×0,52 / 0,24 | grab 3 kg / 0,6 kg |
+| Chalk / Marker | 28 / 88 | 1 / 2 | 8 / 15 cm | grab (capsule) |
+
+Getest: compile zonder fouten, Play mode 0 fouten, 73 dynamische props blijven liggen (57 op bankhoogte, niets onder 0,3 m behalve
+rugzakken/vuilbak/brandblusser), klok draait met de klok mee (3 uur = rechts). **Nog niet in de headset getest.**
 
 ---
 
@@ -203,13 +248,15 @@ Basisset materialen in Blender (gedeeld over assets) én als URP/Lit in Unity in
 
 - [ ] `M_Floor_Linoleum` ✔, `M_Floor_Tile`, `M_Floor_Carpet`
 - [ ] `M_Wall_Paint_White` ✔, `M_Wall_Paint_Accent`, `M_Concrete` ✔
-- [ ] `M_Wood_Light` ✔, `M_Wood_Dark`
+- [x] `M_Wood_Light`, `M_Wood_Dark`
 - [x] `M_Metal_Painted` (lockers), `M_Metal_Chrome`
 - [x] `M_Glass` (transparant)
-- [ ] `M_Chalkboard`, `M_Whiteboard`
-- [ ] `M_Plastic_Chair`
+- [x] `M_Chalkboard`, `M_Whiteboard`
+- [x] `M_Plastic_Chair`
 - [ ] `M_Grass`, `M_Asphalt`
 - *(extra, Fase 1)* `M_Metal_White`, `M_Plastic_White`, `M_Rubber_Black`, `M_Paint_Red`, `M_Emissive_Light`, `M_ExitSign`
+- *(extra, Fase 2)* `M_Plastic_Black/Yellow/Green/Pink`, `M_Screen`, `M_Paper`, `M_Cork`, `M_Fabric_Blue/Red/Dark`, `M_Poster`, `M_WorldMap`
+- Alle 29 materialen zijn nog effen kleuren (geen textures).
 
 Bronnen voor PBR-textures: Poly Haven / ambientCG (CC0). Download handmatig of via script naar `Assets/Art/Textures/`.
 Architectuur heeft UV0 op **wereldschaal (1 UV = 1 m)** → tileable textures lopen door over modules.
@@ -309,3 +356,12 @@ Na elke fase:
 - **Door_Double**: root is een empty op het linkerscharnier; plaats op `Wall_Door_Double`-pivot + (1,15 m, 0, 0) in Blender-coördinaten. Nog geen voorbeeld in de testscene.
 - **Radiator**: 252 tris zonder LOD; prima voor nu, LOD1 alleen als profiler erom vraagt.
 - Bestaande waarschuwing *"Importer generated inconsistent result for OpenXRPackageSettings.asset"* staat los van deze kit.
+
+### Fase 2
+- **VR-test**: props oppakken (vooral kleine: krijt, potlood, gom), laptop, briefjes van het prikbord trekken.
+- **Projectiescherm** hangt volledig uitgerold voor het whiteboard; een `ScreenRoller`-script (lokaal Y schalen van `_Cloth`) ontbreekt nog.
+- **Schermen** (`M_Screen`) zijn zwart; voor een "aan"-stand een emissive materiaal of RenderTexture voorzien (smartboard, monitor, laptop).
+- **Posters/wereldkaart/briefjes** hebben UV 0..1 klaar maar nog geen textures.
+- **Boekenrekken** zijn leeg; vullen met `SM_Prop_Book_*` (MeshCollider laat dat toe) of een gecombineerde "boekenrij"-mesh voor minder draw calls.
+- **Draw calls**: 82 losse props met elk 1–4 materialen in één klas → in de Profiler nakijken; eventueel GPU instancing aanzetten op de materialen of props statisch batchen tot ze opgepakt worden.
+- **Laptopdeksel** zit vast in de prefab (open of dicht); open/dicht klappen in VR vraagt een hinge-script zoals `SwingDoor`.

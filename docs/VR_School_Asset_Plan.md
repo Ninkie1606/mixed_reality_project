@@ -188,6 +188,7 @@ Getest: compile zonder fouten, Play mode zonder fouten, alle 6 SwingDoors draaie
 ## 6. Fase 5 — Buiten (prioriteit LAAG)
 
 - [ ] `SM_Out_Ground_Playground` (met belijning als texture/decal)
+- [x] `SM_Deco_Graffiti_Controls` — grauwe straatgraffiti met de besturing (joystick = bewegen, trigger = deuren/items, X = gsm). Bron: `blender/tools/build_graffiti_controls.py`; in Unity menu **VR School → Place Controls Graffiti** (buitenkant westmuur van Test_Modular; na een nieuwe Phase 1-build opnieuw draaien).
 - [ ] `SM_Out_BikeRack` + `SM_Out_Bike`
 - [ ] `SM_Out_Bench`, `SM_Out_Shelter` (afdak)
 - [ ] `SM_Out_Fence_Segment`, `SM_Out_Gate`, `SM_Out_SchoolSign`

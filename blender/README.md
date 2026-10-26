@@ -16,6 +16,7 @@ blender/
 ├── tools/
 │   ├── export_to_unity.py              ← exportscript (zie onder)
 │   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1)
+│   ├── build_graffiti_controls.py      ← controls-graffiti: texture + wandquad
 │   └── presets/Unity_FBX.py            ← FBX-exportpreset
 └── _archive/           ← oude versies die je niet meer gebruikt
 ```

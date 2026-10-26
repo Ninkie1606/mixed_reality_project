@@ -8,7 +8,7 @@ Gebruik (Blender 5.x):
 Resultaat:
   - blender/models/props/SM_Deco_Graffiti_Controls.blend   (ontwerp + wandquad)
   - blender/textures/source/T_Graffiti_Controls_BaseColor_4k.png
-  - mixed_reality/Assets/Art/Textures/T_Graffiti_Controls_BaseColor.png  (2048 x 1024, RGBA)
+  - mixed_reality/Assets/Art/Textures/T_Graffiti_Controls_BaseColor.png  (4096 x 2048, RGBA)
   - mixed_reality/Assets/Art/Props/SM_Deco_Graffiti_Controls.fbx
 
 Werking:
@@ -72,7 +72,7 @@ ASH, SOOT = "#77746e", "#34332f"
 GREY, DARK = "#4a4c50", "#1c1d20"
 
 
-def paint(top, bottom=None, grain=0.35):
+def paint(top, bottom=None, grain=0.18):
     """Vlakke spuitverf: emissie met verticale gradient (Generated Y) en wat korrel."""
     name = f"P_{top}_{bottom or top}"
     mat = bpy.data.materials.get(name)
@@ -246,7 +246,7 @@ def graffiti_word(name, word, center, height, top, bottom, max_width, tilt=0.0, 
     size = height / cap                         # cap = kapitaalhoogte in em
     root = link(bpy.data.objects.new(name, None))
     fill = paint(top, bottom)
-    ink, cloud, shade = paint(INK, grain=0.1), paint(edge, grain=0.4), paint(SHADOW, grain=0.25)
+    ink, cloud, shade = paint(INK, grain=0.1), paint(edge, grain=0.2), paint(SHADOW, grain=0.25)
     o_ink, o_cloud = 0.035 * size, 0.06 * size
 
     letters, x = [], 0.0
@@ -411,10 +411,8 @@ def reset_scene():
 
 
 def build_design():
-    # vuile overspray: roet en een vleug opgedroogd rood
-    for k, (cx, cy, r, col, a) in enumerate(((0.0, 0.60, 1.35, SOOT, 0.55), (0.3, 0.55, 0.8, DRIED, 0.35),
-                                             (-1.32, -0.15, 0.62, SOOT, 0.45), (0.0, -0.15, 0.62, SOOT, 0.45),
-                                             (1.32, -0.15, 0.62, SOOT, 0.45))):
+    # wat roet-overspray achter de titel (licht: te veel maakt het geheel wazig)
+    for k, (cx, cy, r, col, a) in enumerate(((0.0, 0.62, 1.15, SOOT, 0.28), (0.3, 0.58, 0.6, DRIED, 0.18))):
         poly(f"Haze{k}", ellipse_pts(r, r * 0.62), haze(col, a), 0.0, (cx, cy))
 
     # oude, half weggepoetste tags op de achtergrond (geen contour, lage contrast)
@@ -477,9 +475,9 @@ def weather(img):
         return a * (1 - fy) + b * fy
 
     fade = 0.5 * value_noise(6) + 0.3 * value_noise(24) + 0.2 * value_noise(96)
-    alpha_mul = np.clip(0.25 + fade * 1.1, 0.35, 1.0)
-    flakes = value_noise(420) > 0.9                      # kleine afgebladderde plekjes
-    alpha_mul[flakes] *= 0.15
+    alpha_mul = np.clip(0.7 + fade * 0.5, 0.85, 1.0)
+    flakes = value_noise(160) > 0.93                     # kleine afgebladderde plekjes
+    alpha_mul[flakes] *= 0.35
     rgb = px[..., :3]
     lum = (rgb * np.array([0.2126, 0.7152, 0.0722], dtype=np.float32)).sum(-1, keepdims=True)
     px[..., :3] = rgb * 0.7 + lum * 0.3                   # 30 % ontkleurd
@@ -520,7 +518,6 @@ def render_texture():
     img = bpy.data.images.load(SOURCE_TEX)
     weather(img)
     img.save()
-    img.scale(2048, 1024)
     os.makedirs(os.path.dirname(UNITY_TEX), exist_ok=True)
     img.filepath_raw = UNITY_TEX
     img.file_format = 'PNG'

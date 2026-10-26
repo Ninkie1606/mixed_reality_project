@@ -1,0 +1,83 @@
+{
+  "SM_Cafe_LongTable": {
+    "tris": 76,
+    "materials": [
+      "M_Metal_Painted",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      2.4,
+      0.8,
+      0.75
+    ],
+    "ucx": 0
+  },
+  "SM_Cafe_Chair": {
+    "tris": 96,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Paint_Red"
+    ],
+    "size_m": [
+      0.42,
+      0.489,
+      0.814
+    ],
+    "ucx": 0
+  },
+  "SM_Cafe_Counter": {
+    "tris": 212,
+    "materials": [
+      "M_Glass",
+      "M_Metal_Chrome",
+      "M_Metal_White",
+      "M_Rubber_Black"
+    ],
+    "size_m": [
+      3.04,
+      1.02,
+      1.35
+    ],
+    "ucx": 0
+  },
+  "SM_Cafe_Microwave": {
+    "tris": 276,
+    "materials": [
+      "M_Glass",
+      "M_Metal_White",
+      "M_Plastic_Black",
+      "M_Screen"
+    ],
+    "size_m": [
+      0.48,
+      0.405,
+      0.288
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Tray": {
+    "tris": 44,
+    "materials": [
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      0.45,
+      0.35,
+      0.02
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_LunchBox": {
+    "tris": 44,
+    "materials": [
+      "M_Plastic_Green",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.204,
+      0.152,
+      0.075
+    ],
+    "ucx": 0
+  }
+}

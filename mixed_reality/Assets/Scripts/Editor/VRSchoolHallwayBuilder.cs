@@ -19,8 +19,8 @@ namespace VRSchool.Editor
 
         public static readonly AssetDef[] Assets =
         {
-            new("SM_Hall_Locker_Single", "Hallway", Kind.Locker),
-            new("SM_Hall_Locker_Row_5", "Hallway", Kind.Locker),
+            new("SM_Hall_Locker_Single", "Hallway", Kind.HingedCabinet),
+            new("SM_Hall_Locker_Row_5", "Hallway", Kind.HingedCabinet),
             new("SM_Hall_Bench", "Hallway", Kind.Static),
             new("SM_Hall_InfoScreen", "Hallway", Kind.Static),
             new("SM_Hall_TrophyCase", "Hallway", Kind.StaticMesh),

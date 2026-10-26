@@ -29,7 +29,7 @@ namespace VRSchool.Editor
         LaptopOpen,         // grab, deksel open
         LaptopClosed,       // grab, deksel dicht
         ProjectorScreen,    // statisch, doek niet statisch (oprollen = schalen)
-        Locker,             // kast statisch + MeshCollider (open vakken), elke *_Door* child: SwingDoor + XRSimpleInteractable
+        HingedCabinet,      // kast statisch + MeshCollider (open binnenruimte), elke *_Door* child: SwingDoor + XRSimpleInteractable (lockers, microgolf)
     }
 
     /// <summary>Eén asset: prefabnaam, bronmodel (FBX), categorie (submap onder Art/ en Prefabs/) en Kind.</summary>
@@ -127,7 +127,7 @@ namespace VRSchool.Editor
             ["SM_Prop_Pen"] = 0.02f, ["SM_Prop_Pencil"] = 0.01f, ["SM_Prop_Eraser"] = 0.02f, ["SM_Prop_Ruler"] = 0.03f,
             ["SM_Prop_Calculator"] = 0.15f, ["SM_Prop_PencilCase"] = 0.25f, ["SM_Prop_Backpack_A"] = 3f,
             ["SM_Prop_Backpack_B"] = 3f, ["SM_Prop_WaterBottle"] = 0.6f, ["SM_Prop_Chalk"] = 0.01f, ["SM_Prop_Marker"] = 0.02f,
-            ["SM_Prop_Trophy_A"] = 0.8f, ["SM_Prop_Trophy_B"] = 0.5f,
+            ["SM_Prop_Trophy_A"] = 0.8f, ["SM_Prop_Trophy_B"] = 0.5f, ["SM_Prop_Tray"] = 0.4f, ["SM_Prop_LunchBox"] = 0.4f,
         };
 
         // ------------------------------------------------------------------ materialen
@@ -380,7 +380,7 @@ namespace VRSchool.Editor
                         GameObjectUtility.SetStaticEditorFlags(cloth.gameObject, 0);
                     break;
 
-                case Kind.Locker:
+                case Kind.HingedCabinet:
                     SetStatic(go, true);
                     foreach (var mf in meshes)
                     {

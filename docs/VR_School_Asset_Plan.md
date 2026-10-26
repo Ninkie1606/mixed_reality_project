@@ -27,6 +27,8 @@ Blender (procedureel, opnieuw draaien = alles opnieuw bouwen + exporteren):
 - `blender/tools/build_classroom_kit.py` — Fase 2 klaslokaal → `models/props/SM_Classroom_Kit.blend`; exporteert naar `Art/Classroom` en `Art/Props`.
 - `blender/tools/build_hallway_kit.py` — Fase 3 gang → `models/props/SM_Hallway_Kit.blend`; exporteert naar `Art/Hallway` en `Art/Props`
   (laadt `build_classroom_kit.py` in, dus alle materialen/helpers van Fase 1 + 2).
+- `blender/tools/build_cafeteria_kit.py` — Fase 4 refter → `models/props/SM_Cafeteria_Kit.blend`; exporteert naar `Art/Cafeteria` en `Art/Props`.
+  Fase 4 krijgt één script per ruimte (zelfde opbouw).
 - Elke run schrijft `<blend>_report.json` (tris, materialen, maten per asset).
 
 Unity (`Assets/Scripts/`):
@@ -35,6 +37,7 @@ Unity (`Assets/Scripts/`):
 - `Editor/VRSchoolKitBuilder.cs` — menu **VR School → Build Phase 1 - Modular Kit** (prefabs + `Test_Modular`).
 - `Editor/VRSchoolClassroomBuilder.cs` — menu **VR School → Build Phase 2 - Classroom** (prefabs + `Classroom_01`). Vereist Fase 1.
 - `Editor/VRSchoolHallwayBuilder.cs` — menu **VR School → Build Phase 3 - Hallway** (prefabs + `Hallway_01`). Vereist Fase 1.
+- `Editor/VRSchoolCafeteriaBuilder.cs` — menu **VR School → Build Phase 4 - Cafeteria** (prefabs + `Cafeteria_01`). Vereist Fase 1 + 2.
 - `Interaction/SwingDoor.cs` — deur draait rond scharnierpivot; elke XR-interactable in de deur togglet open/dicht.
 - `Interaction/WallClock.cs` — klokwijzers op systeemtijd of een vaste tijd (`fixedTime`, bv. `08:25`).
 - Prefabs zijn *model-variants*: een nieuwe FBX-export uit Blender werkt ze automatisch bij. Builders opnieuw draaien is veilig (GUID's blijven).
@@ -213,7 +216,7 @@ en fontein; west dubbele deur (ingang), oost nooddeur, exit-borden, 3 plantenbak
   muuroppervlak plaatsen met `Facing(...)`. Bank, plantenbak en plant: onderaan-midden. Infoscherm en fotokader: achteraan-midden in het centrum.
 - **Lockers zijn open kasten**: elk vak heeft een binnenruimte + hoedenplank (MeshCollider) → er kan later iets in. Deuren zijn children
   `<naam>_Door` / `_Door_N` met pivot op het scharnier; in Unity krijgt elke deur `SwingDoor` (+95°, opent naar de gang) +
-  `XRSimpleInteractable` + kinematic Rigidbody (nieuw `Kind.Locker`).
+  `XRSimpleInteractable` + kinematic Rigidbody (`Kind.HingedCabinet`).
 - Beeldvlakken (`_Screen` van het infoscherm, `_Picture` van het fotokader) zijn aparte children met UV 0..1, zoals bij de poster.
 - Plant staat los van de bak (zet hem op bak-hoogte + 0,40 m); zo kan dezelfde plant ook elders staan.
 - Nieuwe materialen: `M_Metal_Gold`, `M_Soil`, `M_Plant_Leaf` (Blender + `VRSchoolBuildCore`).
@@ -239,9 +242,32 @@ alle 33 SwingDoors (lockers, klas-, dubbele en nooddeur) openen via script, de 9
 
 ## 5. Fase 4 — Overige ruimtes (prioriteit MIDDEL/LAAG)
 
-### Refter
-- [ ] `SM_Cafe_LongTable`, `SM_Cafe_Chair`, `SM_Cafe_Counter`
-- [ ] `SM_Prop_Tray`, `SM_Prop_LunchBox`, `SM_Cafe_Microwave`
+### Refter ✅
+- [x] `SM_Cafe_LongTable`, `SM_Cafe_Chair`, `SM_Cafe_Counter`
+- [x] `SM_Prop_Tray`, `SM_Prop_LunchBox`, `SM_Cafe_Microwave`
+
+**Unity**: [x] scene `Scenes/Cafeteria_01` (12 × 10 m): buffet langs de noordwand (kast met stapel van 6 dienbladen + 2 togen,
+klantenzijde naar de zaal), 2 microgolfovens op kasten (west), 9 tafels (3 × 3) met elk 8 stoelen, 6 ramen met radiatoren (zuid),
+dubbele deur als ingang (oost), klok, poster, vuilbakken, brandblusser, TL's + showcase-rij + XR Origin.
+Dienbladen, brooddozen, drinkflessen en rugzakken reproduceerbaar verspreid (seed 11).
+
+**Ontwerpkeuzes refter**
+- Alle refter-assets: pivot onderaan-midden. Stoel kijkt naar −Y zoals de klasstoel; toog: klantenzijde (glijbaan, glazen kap) = −Y.
+- **Microgolfoven**: open binnenruimte + deur als child `_Door` (scharnier links) → zelfde `Kind.HingedCabinet` als de lockers
+  (vroeger `Kind.Locker`, hernoemd). Deur opent naar voren.
+- Toog krijgt een **MeshCollider** (dienbladen kunnen op het blad en de glijbaan liggen); tafel en stoel een BoxCollider zoals de klasbanken.
+- Hergebruik uit Fase 2: `SM_Class_Cabinet` (onder microgolf/dienbladen), `SM_Class_TrashBin`, `SM_Class_WallClock`, `SM_Prop_WaterBottle`, rugzakken.
+
+| Asset | Tris | Mat. | Maat (m) | Unity |
+|---|---|---|---|---|
+| LongTable / Chair | 76 / 96 | 2 / 2 | 2,4×0,8×0,75 / 0,42×0,49×0,81 | static, box |
+| Counter | 212 | 4 (wit, chroom, glas, rubber) | 3,04×1,02×1,35 | static, MeshCollider |
+| Microwave | 276 | 4 | 0,48×0,41×0,29 | static + MeshCollider, deur SwingDoor + XRSimpleInteractable |
+| Tray / LunchBox | 44 / 44 | 1 / 2 | 45×35×2 cm / 20×15×7,5 cm | grab 0,4 kg |
+
+Getest: compile zonder fouten, microgolfdeuren openen naar de zaal en 72/72 stoelen kijken naar hun tafel (gemeten),
+Play mode 0 fouten: alle SwingDoors openen via script, 33 dienbladen / 27 brooddozen / 13 flessen blijven op tafel liggen.
+**Nog niet in de headset getest.**
 
 ### Toiletten
 - [ ] `SM_WC_Stall` (deur apart), `SM_WC_Toilet`, `SM_WC_Sink`, `SM_WC_Mirror`
@@ -408,3 +434,10 @@ Na elke fase:
 - **Infoscherm** (`M_Screen`) is zwart en het **fotokader** deelt `M_Poster` met de posterkaders → eigen texture/RenderTexture per instantie voorzien.
 - **Klasdeuren in de gang** openen naar de gangzijde (zelfde prefab als in Classroom_01); de gang hangt nog niet aan een klaslokaal vast.
 - Geen geluid/feedback bij lockers (locker dichtslaan staat bij §10 Audio).
+
+### Fase 4 — Refter
+- **Dienbladstapel** zakt ~5 mm per blad in elkaar (dunne BoxColliders van 2 cm); blijft wel stabiel staan. Eventueel kinematic maken tot het eerste pakken.
+- **Warmhoudbakken** op de toog zijn effen chroom (geen eten); eten/borden zijn nog geen assets.
+- **Microgolfoven** doet niets behalve open/dicht (geen licht, geen timer).
+- Stoelen zijn statisch (BoxCollider) zoals in de klas; aanschuiven/verplaatsen in VR kan nog niet.
+- 72 stoelen + 9 tafels + ~100 props → draw calls nakijken in de Profiler (GPU instancing op de materialen).

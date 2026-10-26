@@ -18,6 +18,7 @@ blender/
 │   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1) + gedeelde helpers
 │   ├── build_classroom_kit.py          ← genereert klaslokaal-meubels en grab-props (Fase 2)
 │   ├── build_hallway_kit.py            ← genereert gang-assets: lockers, vitrine, automaat, ... (Fase 3)
+│   ├── build_cafeteria_kit.py          ← genereert refter-assets: tafel, stoel, toog, microgolf, dienblad (Fase 4)
 │   └── presets/Unity_FBX.py            ← FBX-exportpreset
 └── _archive/           ← oude versies die je niet meer gebruikt
 ```

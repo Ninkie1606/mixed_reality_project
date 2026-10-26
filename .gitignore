@@ -18,3 +18,11 @@ desktop.ini
 # --- Editors ---
 .vscode/
 .idea/
+*.code-workspace
+.vs/
+
+# --- Unity User Settings ---
+**/[Uu]ser[Ss]ettings/
+*.user
+*.userprefs
+

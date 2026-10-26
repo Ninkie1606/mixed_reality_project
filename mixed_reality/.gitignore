@@ -66,9 +66,14 @@ crashlytics-build.properties
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
 /[Aa]ssets/[Ss]treamingAssets/aa/*
 
-# XR Simulation: gebruikersspecifieke instellingen (per persoon)
+# --- Gebruikersspecifieke en lokale XR / Editor instellingen ---
+# Voorkomt merge conflicts tussen teamleden met verschillende OS/hardware/editor-voorkeuren
 /[Aa]ssets/XR/UserSimulationSettings/
 /[Aa]ssets/XR/UserSimulationSettings.meta
+/[Aa]ssets/CompositionLayers/UserSettings/
+/[Aa]ssets/CompositionLayers/UserSettings.meta
+/[Aa]ssets/XR/Settings/OpenXR Editor Settings.asset*
+/[Aa]ssets/XRI/Settings/XRInteractionEditorSettings.asset*
 
 # --- Editors / IDE's ---
 .idea/

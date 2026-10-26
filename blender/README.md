@@ -15,7 +15,8 @@ blender/
 ├── references/         ← referentiebeelden, schetsen, moodboard
 ├── tools/
 │   ├── export_to_unity.py              ← exportscript (zie onder)
-│   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1)
+│   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1) + gedeelde helpers
+│   ├── build_classroom_kit.py          ← genereert klaslokaal-meubels en grab-props (Fase 2)
 │   └── presets/Unity_FBX.py            ← FBX-exportpreset
 └── _archive/           ← oude versies die je niet meer gebruikt
 ```

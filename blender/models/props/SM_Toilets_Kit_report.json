@@ -1,0 +1,83 @@
+{
+  "SM_WC_Stall": {
+    "tris": 144,
+    "materials": [
+      "M_Laminate_Teal",
+      "M_Metal_Chrome",
+      "M_Plastic_Green"
+    ],
+    "size_m": [
+      0.905,
+      1.54,
+      2.013
+    ],
+    "ucx": 0
+  },
+  "SM_WC_Toilet": {
+    "tris": 362,
+    "materials": [
+      "M_Ceramic_White",
+      "M_Metal_Chrome",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.38,
+      0.707,
+      0.808
+    ],
+    "ucx": 0
+  },
+  "SM_WC_Sink": {
+    "tris": 120,
+    "materials": [
+      "M_Ceramic_White",
+      "M_Metal_Chrome"
+    ],
+    "size_m": [
+      0.55,
+      0.45,
+      0.512
+    ],
+    "ucx": 0
+  },
+  "SM_WC_Mirror": {
+    "tris": 42,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Mirror"
+    ],
+    "size_m": [
+      0.624,
+      0.01,
+      0.824
+    ],
+    "ucx": 0
+  },
+  "SM_WC_HandDryer": {
+    "tris": 30,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.28,
+      0.202,
+      0.315
+    ],
+    "ucx": 0
+  },
+  "SM_WC_SoapDispenser": {
+    "tris": 30,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Plastic_Pink",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.1,
+      0.115,
+      0.2
+    ],
+    "ucx": 0
+  }
+}

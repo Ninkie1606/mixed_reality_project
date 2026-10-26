@@ -29,7 +29,9 @@ namespace VRSchool.Editor
         LaptopOpen,         // grab, deksel open
         LaptopClosed,       // grab, deksel dicht
         ProjectorScreen,    // statisch, doek niet statisch (oprollen = schalen)
-        HingedCabinet,      // kast statisch + MeshCollider (open binnenruimte), elke *_Door* child: SwingDoor + XRSimpleInteractable (lockers, microgolf)
+        HingedCabinet,      // kast statisch + MeshCollider (open binnenruimte), elke *_Door* child: SwingDoor + XRSimpleInteractable
+                            // (lockers, microgolf, cabine, ingangsdeuren, poort); *_R = gespiegeld blad, draait de andere kant op
+        StreetLight,        // statisch, BoxCollider + Point Light bovenaan (lantaarnpaal)
     }
 
     /// <summary>Eén asset: prefabnaam, bronmodel (FBX), categorie (submap onder Art/ en Prefabs/) en Kind.</summary>
@@ -78,7 +80,8 @@ namespace VRSchool.Editor
             Emission = new Color(er, eg, eb), EmissionStrength = emissionStrength,
         };
 
-        // Moet overeenkomen met MATERIALS in build_modular_kit.py, build_classroom_kit.py en build_hallway_kit.py
+        // Moet overeenkomen met MATERIALS in build_modular_kit.py, build_classroom_kit.py, build_hallway_kit.py,
+        // build_toilets_kit.py en build_outdoor_kit.py
         static readonly MaterialDef[] Materials =
         {
             // Fase 1
@@ -116,6 +119,17 @@ namespace VRSchool.Editor
             Def("M_Metal_Gold", 0.85f, 0.62f, 0.20f, 1, 1, 0.25f),
             Def("M_Soil", 0.10f, 0.06f, 0.035f, 1, 0, 1f),
             Def("M_Plant_Leaf", 0.08f, 0.30f, 0.06f, 1, 0, 0.7f),
+            // Fase 4 (toiletten)
+            Def("M_Ceramic_White", 0.92f, 0.92f, 0.90f, 1, 0, 0.1f),
+            Def("M_Laminate_Teal", 0.10f, 0.38f, 0.40f, 1, 0, 0.4f),
+            Def("M_Mirror", 0.95f, 0.95f, 0.95f, 1, 1, 0.02f),
+            // Fase 5 (buiten, ingang)
+            Def("M_Brick", 0.36f, 0.15f, 0.09f, 1, 0, 0.9f),
+            Def("M_Glass_Dark", 0.04f, 0.06f, 0.08f, 1, 0.3f, 0.08f),
+            Def("M_Paving", 0.42f, 0.42f, 0.40f, 1, 0, 0.9f),
+            Def("M_Grass", 0.10f, 0.22f, 0.05f, 1, 0, 1f),
+            Def("M_Plant_Conifer", 0.03f, 0.15f, 0.05f, 1, 0, 0.8f),
+            Def("M_Sign_Letters", 1.0f, 0.97f, 0.90f, 1, 0, 0.5f, 1.0f, 0.95f, 0.85f, 2.5f),
         };
 
         // Massa (kg) voor grab-props; anders 1 kg.
@@ -395,8 +409,17 @@ namespace VRSchool.Editor
                         FitBox(mf);
                         leaf.AddComponent<Rigidbody>().isKinematic = true;
                         leaf.AddComponent<XRSimpleInteractable>();
-                        leaf.AddComponent<SwingDoor>();
+                        var hinged = leaf.AddComponent<SwingDoor>();
+                        if (leaf.name.EndsWith("_R"))
+                            SetOpenAngle(hinged, -95f);
                     }
+                    break;
+
+                case Kind.StreetLight:
+                    foreach (var mf in meshes)
+                        FitBox(mf);
+                    SetStatic(go, true);
+                    AddStreetLight(go);
                     break;
             }
         }
@@ -475,6 +498,21 @@ namespace VRSchool.Editor
             light.shadows = LightShadows.Soft;
         }
 
+        static void AddStreetLight(GameObject go)
+        {
+            // Mixed: werkt realtime zolang er niet gebakken is, daarna baked indirect licht.
+            var lightGo = new GameObject("Light");
+            lightGo.transform.SetParent(go.transform, false);
+            lightGo.transform.localPosition = B2U(0f, 0f, 3.75f);
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.range = 7f;
+            light.intensity = 2f;
+            light.color = new Color(1f, 0.85f, 0.65f);
+            light.lightmapBakeType = LightmapBakeType.Mixed;
+            light.shadows = LightShadows.None;
+        }
+
         static void AddChildPrefab(Transform parent, string prefabName, string childName, Vector3 localPos, Quaternion localRot)
         {
             var child = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab(prefabName));
@@ -496,7 +534,7 @@ namespace VRSchool.Editor
             var pos = start;
             foreach (var piece in pieces)
             {
-                var length = piece.Contains("4m") || piece.EndsWith("Door_Double") ? 4f : 2f;
+                var length = piece.Contains("8m") ? 8f : piece.Contains("4m") || piece.EndsWith("Door_Double") ? 4f : 2f;
                 // Lokale Blender-X van het stuk wijst langs 'along'; pivot aan het juiste uiteinde zetten.
                 var pivot = Vector3.Dot(along, dir) > 0f ? pos : pos + dir * length;
                 Spawn(piece, parent, pivot, rot);

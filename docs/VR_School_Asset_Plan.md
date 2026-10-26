@@ -29,6 +29,7 @@ Blender (procedureel, opnieuw draaien = alles opnieuw bouwen + exporteren):
   (laadt `build_classroom_kit.py` in, dus alle materialen/helpers van Fase 1 + 2).
 - `blender/tools/build_cafeteria_kit.py` — Fase 4 refter → `models/props/SM_Cafeteria_Kit.blend`; exporteert naar `Art/Cafeteria` en `Art/Props`.
   Fase 4 krijgt één script per ruimte (zelfde opbouw).
+- `blender/tools/build_toilets_kit.py` — Fase 4 toiletten → `models/props/SM_Toilets_Kit.blend`; exporteert naar `Art/Toilets`.
 - Elke run schrijft `<blend>_report.json` (tris, materialen, maten per asset).
 
 Unity (`Assets/Scripts/`):
@@ -38,6 +39,7 @@ Unity (`Assets/Scripts/`):
 - `Editor/VRSchoolClassroomBuilder.cs` — menu **VR School → Build Phase 2 - Classroom** (prefabs + `Classroom_01`). Vereist Fase 1.
 - `Editor/VRSchoolHallwayBuilder.cs` — menu **VR School → Build Phase 3 - Hallway** (prefabs + `Hallway_01`). Vereist Fase 1.
 - `Editor/VRSchoolCafeteriaBuilder.cs` — menu **VR School → Build Phase 4 - Cafeteria** (prefabs + `Cafeteria_01`). Vereist Fase 1 + 2.
+- `Editor/VRSchoolToiletsBuilder.cs` — menu **VR School → Build Phase 4 - Toilets** (prefabs + `Toilets_01`). Vereist Fase 1 + 2.
 - `Interaction/SwingDoor.cs` — deur draait rond scharnierpivot; elke XR-interactable in de deur togglet open/dicht.
 - `Interaction/WallClock.cs` — klokwijzers op systeemtijd of een vaste tijd (`fixedTime`, bv. `08:25`).
 - Prefabs zijn *model-variants*: een nieuwe FBX-export uit Blender werkt ze automatisch bij. Builders opnieuw draaien is veilig (GUID's blijven).
@@ -269,9 +271,31 @@ Getest: compile zonder fouten, microgolfdeuren openen naar de zaal en 72/72 stoe
 Play mode 0 fouten: alle SwingDoors openen via script, 33 dienbladen / 27 brooddozen / 13 flessen blijven op tafel liggen.
 **Nog niet in de headset getest.**
 
-### Toiletten
-- [ ] `SM_WC_Stall` (deur apart), `SM_WC_Toilet`, `SM_WC_Sink`, `SM_WC_Mirror`
-- [ ] `SM_WC_HandDryer`, `SM_WC_SoapDispenser`
+### Toiletten ✅
+- [x] `SM_WC_Stall` (deur apart), `SM_WC_Toilet`, `SM_WC_Sink`, `SM_WC_Mirror`
+- [x] `SM_WC_HandDryer`, `SM_WC_SoapDispenser`
+
+**Unity**: [x] scene `Scenes/Toilets_01` (6 × 4 m): 4 cabines met toilet tegen de noordwand, 3 lavabo's met spiegel en
+zeepdispenser (zuid), handendroger, vuilbak, deur (oost), 3 TL's, rookmelder, baked reflectieprobe + showcase-rij + XR Origin.
+
+**Ontwerpkeuzes toiletten**
+- Cabine, toilet en lavabo: pivot **achteraan-midden op de vloer** (op het muuroppervlak plaatsen; toilet op dezelfde pivot als
+  zijn cabine). Spiegel, handendroger en zeepdispenser: achteraan-midden in het centrum.
+- **Cabine** = 2 zijwanden (2,5 cm, 15 cm vrij boven de vloer) + front met chromen bovenregel; cabines naast elkaar om de 0,9 m
+  (de zijwanden staan dan dubbel, 5 cm). Deur = child `_Door` → `Kind.HingedCabinet`, opent **naar buiten** (weg van het toilet;
+  open deur reikt tot 1,2 m van de lavabo's).
+- Lavabo krijgt een **MeshCollider** (zeep/props kunnen in de kom liggen).
+- Nieuwe materialen: `M_Ceramic_White`, `M_Laminate_Teal`, `M_Mirror` (Blender + `VRSchoolBuildCore`).
+
+| Asset | Tris | Mat. | Maat (m) | Unity |
+|---|---|---|---|---|
+| Stall | 144 | 3 | 0,9×1,54×2,01 | static + MeshCollider, deur SwingDoor + XRSimpleInteractable |
+| Toilet / Sink | 362 / 120 | 3 / 2 | 0,38×0,71×0,81 / 0,55×0,45 (rand op 0,85) | static, box / MeshCollider |
+| Mirror | 42 | 2 | 0,62×0,82 | static |
+| HandDryer / SoapDispenser | 30 / 30 | 2 / 3 | 0,28×0,2×0,32 / 0,1×0,12×0,2 | static |
+
+Getest: compile zonder fouten, 4/4 cabinedeuren openen naar buiten (gemeten), Play mode 0 fouten, alle 6 SwingDoors openen via script.
+**Nog niet in de headset getest.**
 
 ### Sportzaal
 - [ ] `SM_Gym_BasketHoop`, `SM_Gym_Mat`, `SM_Gym_WallBars`, `SM_Gym_Bleachers`
@@ -290,14 +314,42 @@ Play mode 0 fouten: alle SwingDoors openen via script, 33 dienbladen / 27 broodd
 
 ---
 
-## 6. Fase 5 — Buiten (prioriteit LAAG)
+## 6. Fase 5 — Buiten (prioriteit LAAG → ingang naar voren gehaald)
 
 - [ ] `SM_Out_Ground_Playground` (met belijning als texture/decal)
-- [ ] `SM_Out_BikeRack` + `SM_Out_Bike`
-- [ ] `SM_Out_Bench`, `SM_Out_Shelter` (afdak)
-- [ ] `SM_Out_Fence_Segment`, `SM_Out_Gate`, `SM_Out_SchoolSign`
-- [ ] `SM_Out_Tree_A/B` (low-poly, of uit gratis pack)
+- [x] `SM_Out_BikeRack` + [ ] `SM_Out_Bike`
+- [x] `SM_Out_Bench`, [ ] `SM_Out_Shelter` (afdak)
+- [x] `SM_Out_Fence_Segment`, `SM_Out_Gate`, `SM_Out_SchoolSign`
+- [x] `SM_Out_Tree_A/B` (low-poly, zelf gebouwd)
 - [ ] Skybox/HDRI → niet in Blender maken: gebruik Poly Haven HDRI
+- [x] *(extra, ingang)* `SM_Out_Facade_4m`, `SM_Out_Facade_Corner`, `SM_Out_Facade_Entrance_8m` (portaal met glazen
+  dubbele deur, luifel met downlights, glasgevel, verlichte inkomhal), `SM_Out_Ground_Paving_4x4`, `SM_Out_Ground_Grass_20x20`,
+  `SM_Out_Lamppost`
+
+Tooling: `blender/tools/build_outdoor_kit.py` → `models/environment/SM_Outdoor_Kit.blend`, export naar `Art/Outdoor`;
+Unity: `Editor/VRSchoolEntranceBuilder.cs`, menu **VR School → Build Phase 5 - Entrance** (prefabs + `Entrance_01`).
+
+**Unity**: [x] scene `Scenes/Entrance_01`: schoolgevel van 32 m (2 verdiepingen, baksteen) met de ingang in het midden en zijgevels,
+voorplein (16 × 8 m) en pad (4 × 8 m) in bestrating, gras rondom (40 × 40 m), hek met open poort, naambord "VR SCHOOL",
+2 banken, 2 fietsrekken, 6 lantaarnpalen, 14 bomen. De gebruiker start net binnen de poort, 14,5 m recht voor de ingang.
+
+### Focus: ingang helder, omgeving vaag
+Doel: de blik van de gebruiker naar de school leiden zonder pijlen of UI.
+- **Depth of Field (Gaussian)** in een globaal volume (`Assets/Settings/Volumes/VP_Entrance_Focus.asset`).
+  Script `Visual/FocusOnTarget.cs` zet elke frame de far-blur op *afstand camera → ingang + 0,5 m* en laat over 5 m
+  vervagen. Alles wat dichter is dan de ingang blijft scherp, alles erachter en ernaast (de gevelvleugels liggen schuin
+  verder weg, bomen, horizon) wordt vaag, waar de gebruiker ook staat.
+- **Lineaire mist** loopt mee met hetzelfde script (begint achter de ingang, dicht na 25 m): de omgeving verdwijnt in nevel.
+- **Vignet** 0,4: randen van het beeld donkerder, de blik gaat naar het midden.
+- **Licht**: gedempte zon (0,7) in de rug van de gebruiker, warme spots onder de luifel, verlichte inkomhal en een
+  emissief naambord → de ingang is het helderste punt.
+- Post-processing: de URP-renderer (`Android Preset`) kreeg PostProcessData; alleen de camera in `Entrance_01` heeft
+  post-processing aan, de andere scenes betalen er niets voor.
+- Afstellen: `sharpMargin`, `blurFalloff`, `fogFalloff` op `FocusVolume` (FocusOnTarget) en Max Radius in het profiel.
+
+Getest: compile zonder fouten, ingangsdeuren en poortbladen draaien naar buiten (gemeten), Play mode 0 fouten,
+FocusOnTarget stuurt DoF/mist (start 15 m, eind 20 m vanaf de startplek), screenshot gecontroleerd.
+**Nog niet in de headset getest.**
 
 ---
 
@@ -313,11 +365,13 @@ Basisset materialen in Blender (gedeeld over assets) én als URP/Lit in Unity in
 - [x] `M_Glass` (transparant)
 - [x] `M_Chalkboard`, `M_Whiteboard`
 - [x] `M_Plastic_Chair`
-- [ ] `M_Grass`, `M_Asphalt`
+- [x] `M_Grass`, [ ] `M_Asphalt`
 - *(extra, Fase 1)* `M_Metal_White`, `M_Plastic_White`, `M_Rubber_Black`, `M_Paint_Red`, `M_Emissive_Light`, `M_ExitSign`
 - *(extra, Fase 2)* `M_Plastic_Black/Yellow/Green/Pink`, `M_Screen`, `M_Paper`, `M_Cork`, `M_Fabric_Blue/Red/Dark`, `M_Poster`, `M_WorldMap`
 - *(extra, Fase 3)* `M_Metal_Gold`, `M_Soil`, `M_Plant_Leaf`
-- Alle 32 materialen zijn nog effen kleuren (geen textures).
+- *(extra, Fase 4)* `M_Ceramic_White`, `M_Laminate_Teal`, `M_Mirror`
+- *(extra, Fase 5)* `M_Brick`, `M_Glass_Dark`, `M_Paving`, `M_Plant_Conifer`, `M_Sign_Letters` (emissief)
+- Alle 41 materialen zijn nog effen kleuren (geen textures).
 
 Bronnen voor PBR-textures: Poly Haven / ambientCG (CC0). Download handmatig of via script naar `Assets/Art/Textures/`.
 Architectuur heeft UV0 op **wereldschaal (1 UV = 1 m)** → tileable textures lopen door over modules.
@@ -441,3 +495,22 @@ Na elke fase:
 - **Microgolfoven** doet niets behalve open/dicht (geen licht, geen timer).
 - Stoelen zijn statisch (BoxCollider) zoals in de klas; aanschuiven/verplaatsen in VR kan nog niet.
 - 72 stoelen + 9 tafels + ~100 props → draw calls nakijken in de Profiler (GPU instancing op de materialen).
+
+### Fase 4 — Toiletten
+- **Spiegels** zijn zwart tot de reflectieprobe gebakken is (zelfde bake als de lightmaps); echte spiegelbeelden vragen een
+  planar reflection / RenderTexture-camera, wat duur is in VR.
+- **Cabinedeur** heeft geen slot: het "vrij"-plaatje is altijd groen. Een `StallLock` (rood/groen wisselen bij sluiten) is een kleine uitbreiding op `SwingDoor`.
+- Cabinedeuren openen naar buiten; wil je ze naar binnen, zet `openAngle` op −95 (de deur raakt het toilet dan net niet).
+- Vloer is nog linoleum: `M_Floor_Tile` (§7) en tegels op de muren ontbreken nog.
+- Geen interactie met kranen, handendroger of zeep (geluid/water later).
+
+### Fase 5 — Ingang
+- **Depth of Field in VR**: in de headset kan blur hinderlijk zijn (het oog kan niet zelf scherpstellen) en het kost
+  GPU-tijd op standalone. Eerst testen op de Quest; valt het tegen, zet DoF uit en laat mist + licht + vignet het werk doen.
+- Gaussian DoF is begrensd (Max Radius 1,5): de vervaging is zacht, geen sterke bokeh. Sterker kan met Bokeh-DoF (duur)
+  of een eigen "focus-bol"-effect (vervagen op wereldafstand tot de ingang i.p.v. camera-afstand).
+- Objecten naast de ingang op dezelfde afstand blijven scherp (DoF meet afstand tot de camera, niet tot de ingang).
+- **Ingangsgevel** gebruikt 9 materialen → atlas zodra er textures zijn. Ramen (`M_Glass_Dark`) weerspiegelen de skybox;
+  reflectieprobe/bake ontbreekt nog.
+- Gebouw is enkel een gevel (+ inkomhal van 3 m): de ingang leidt nog niet naar `Hallway_01`. Achterkant/dak ontbreken (vallen weg in de mist).
+- De CLI-capture (`unity command capture screenshot`) slaat post-processing over; gebruik `ScreenCapture` of de Game view om het effect te zien.

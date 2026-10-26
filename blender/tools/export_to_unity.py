@@ -6,15 +6,17 @@ Gebruik:
   2. Selecteer de object(en) die je wilt exporteren
   3. Scripting-tab -> Open dit bestand -> Run Script
 
-Resultaat: <repo>/mixed_reality/Assets/_Project/Models/<ObjectNaam>.fbx
+Resultaat: <repo>/mixed_reality/Assets/Art/<CATEGORY>/<ObjectNaam>.fbx
 Children van een geselecteerd object gaan mee in dezelfde FBX.
+Pas CATEGORY aan (Building, Classroom, Hallway, Props, ...) vóór je het script draait.
 """
 
 import os
 import bpy
 
 UNITY_PROJECT = "mixed_reality"
-MODELS_SUBDIR = os.path.join("Assets", "_Project", "Models")
+CATEGORY = "Props"
+MODELS_SUBDIR = os.path.join("Assets", "Art", CATEGORY)
 
 
 def find_repo_root(start):

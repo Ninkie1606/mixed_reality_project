@@ -1,0 +1,524 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using UnityEditor;
+using UnityEditor.SceneManagement;
+using UnityEngine;
+using UnityEngine.Rendering;
+using UnityEngine.SceneManagement;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using UnityEngine.XR.Interaction.Toolkit.Locomotion.Teleportation;
+using VRSchool.Interaction;
+
+namespace VRSchool.Editor
+{
+    /// <summary>
+    /// Fase 1 (modulaire gebouwkit): URP-materialen, prefabs en de testscene Test_Modular.
+    /// FBX'en komen uit blender/tools/build_modular_kit.py. Opnieuw uitvoeren is veilig (overschrijft, GUID's blijven).
+    /// </summary>
+    public static class VRSchoolKitBuilder
+    {
+        const string ModelDir = "Assets/Art/Building";
+        const string MaterialDir = "Assets/Art/Materials";
+        const string PrefabDir = "Assets/Prefabs/Building";
+        const string TestScenePath = "Assets/Scenes/Test_Modular.unity";
+        const string XROriginPath = "Assets/VRTemplateAssets/Prefabs/Setup/Complete XR Origin Set Up Variant.prefab";
+
+        struct MaterialDef
+        {
+            public string Name;
+            public Color Linear;            // zelfde (lineaire) waarden als in Blender
+            public float Metallic;
+            public float Roughness;
+            public Color Emission;
+            public float EmissionStrength;
+        }
+
+        static MaterialDef Def(string name, float r, float g, float b, float a, float metallic, float roughness,
+            float er = 0f, float eg = 0f, float eb = 0f, float emissionStrength = 0f) => new MaterialDef
+        {
+            Name = name, Linear = new Color(r, g, b, a), Metallic = metallic, Roughness = roughness,
+            Emission = new Color(er, eg, eb), EmissionStrength = emissionStrength,
+        };
+
+        // Moet overeenkomen met MATERIALS in build_modular_kit.py
+        static readonly MaterialDef[] Materials =
+        {
+            Def("M_Wall_Paint_White", 0.82f, 0.81f, 0.77f, 1, 0, 0.9f),
+            Def("M_Floor_Linoleum", 0.30f, 0.36f, 0.34f, 1, 0, 0.55f),
+            Def("M_Concrete", 0.50f, 0.50f, 0.48f, 1, 0, 0.95f),
+            Def("M_Wood_Light", 0.62f, 0.45f, 0.28f, 1, 0, 0.6f),
+            Def("M_Metal_Painted", 0.28f, 0.35f, 0.42f, 1, 0.3f, 0.5f),
+            Def("M_Metal_White", 0.88f, 0.88f, 0.86f, 1, 0.2f, 0.4f),
+            Def("M_Metal_Chrome", 0.80f, 0.80f, 0.80f, 1, 1, 0.15f),
+            Def("M_Glass", 0.80f, 0.90f, 0.95f, 0.2f, 0, 0.05f),
+            Def("M_Plastic_White", 0.90f, 0.90f, 0.88f, 1, 0, 0.5f),
+            Def("M_Rubber_Black", 0.03f, 0.03f, 0.03f, 1, 0, 0.9f),
+            Def("M_Paint_Red", 0.70f, 0.03f, 0.02f, 1, 0, 0.35f),
+            Def("M_Emissive_Light", 1.0f, 0.98f, 0.92f, 1, 0, 0.5f, 1.0f, 0.98f, 0.92f, 3f),
+            Def("M_ExitSign", 0.05f, 0.75f, 0.25f, 1, 0, 0.4f, 0.05f, 0.9f, 0.3f, 2f),
+        };
+
+        enum Kind { Static, StaticUcx, StaticMeshCollider, Floor, Door, DoubleDoor, Handle, Grab, Light }
+
+        static readonly (string name, Kind kind)[] Assets =
+        {
+            ("SM_Build_Wall_2m", Kind.Static),
+            ("SM_Build_Wall_4m", Kind.Static),
+            ("SM_Build_Wall_Corner_In", Kind.Static),
+            ("SM_Build_Wall_Corner_Out", Kind.Static),
+            ("SM_Build_Wall_Window", Kind.StaticUcx),
+            ("SM_Build_Wall_Door", Kind.StaticUcx),
+            ("SM_Build_Wall_Door_Double", Kind.StaticUcx),
+            ("SM_Build_Floor_2x2", Kind.Floor),
+            ("SM_Build_Ceiling_2x2", Kind.Static),
+            ("SM_Build_Stairs_Straight", Kind.StaticMeshCollider),
+            ("SM_Build_Railing", Kind.Static),
+            ("SM_Build_DoorHandle", Kind.Handle),          // vóór de deuren: wordt erin genest
+            ("SM_Build_Door_Classroom", Kind.Door),
+            ("SM_Build_Door_Emergency", Kind.Door),
+            ("SM_Build_Door_Double", Kind.DoubleDoor),
+            ("SM_Build_Window_Glass", Kind.Static),
+            ("SM_Build_Light_TL", Kind.Light),
+            ("SM_Build_Radiator", Kind.Static),
+            ("SM_Build_Socket", Kind.Static),
+            ("SM_Build_LightSwitch", Kind.Static),
+            ("SM_Build_FireExtinguisher", Kind.Grab),
+            ("SM_Build_ExitSign", Kind.Static),
+            ("SM_Build_SmokeDetector", Kind.Static),
+            ("SM_Build_Speaker", Kind.Static),
+        };
+
+        // Blender (x, y, z) -> Unity lokaal. Wordt gemeten op de geïmporteerde modellen (zie DetectAxes).
+        static float axisX = -1f, axisY = -1f;
+        static Vector3 B2U(float x, float y, float z) => new Vector3(axisX * x, z, axisY * y);
+
+        [MenuItem("VR School/Build Phase 1 - Modular Kit")]
+        public static void BuildAllMenu() => Debug.Log(BuildAll());
+
+        public static string BuildAll()
+        {
+            var log = new StringBuilder();
+            EnsureFolder(MaterialDir);
+            EnsureFolder(PrefabDir);
+            EnsureFolder("Assets/Scenes");
+            AssetDatabase.Refresh();
+
+            BuildMaterials(log);
+            RemapModelMaterials(log);
+
+            // Alles gebeurt in een aparte (additieve) scene, zodat de open scene van de gebruiker onaangeroerd blijft.
+            var previousActive = SceneManager.GetActiveScene();
+            var scene = EditorSceneManager.NewScene(NewSceneSetup.DefaultGameObjects, NewSceneMode.Additive);
+            SceneManager.SetActiveScene(scene);
+            try
+            {
+                DetectAxes(log);
+                BuildPrefabs(log);
+                BuildTestScene(scene, log);
+                EditorSceneManager.SaveScene(scene, TestScenePath);
+                log.AppendLine($"Scene opgeslagen: {TestScenePath}");
+            }
+            finally
+            {
+                if (previousActive.IsValid())
+                    SceneManager.SetActiveScene(previousActive);
+                EditorSceneManager.CloseScene(scene, true);
+            }
+            AssetDatabase.SaveAssets();
+            return log.ToString();
+        }
+
+        // ------------------------------------------------------------------ materialen
+
+        static void BuildMaterials(StringBuilder log)
+        {
+            var lit = Shader.Find("Universal Render Pipeline/Lit");
+            foreach (var def in Materials)
+            {
+                var path = $"{MaterialDir}/{def.Name}.mat";
+                var mat = AssetDatabase.LoadAssetAtPath<Material>(path);
+                if (mat == null)
+                {
+                    mat = new Material(lit) { name = def.Name };
+                    AssetDatabase.CreateAsset(mat, path);
+                }
+                mat.shader = lit;
+                var c = def.Linear.gamma;
+                c.a = def.Linear.a;
+                mat.SetColor("_BaseColor", c);
+                mat.SetFloat("_Metallic", def.Metallic);
+                mat.SetFloat("_Smoothness", 1f - def.Roughness);
+
+                if (def.EmissionStrength > 0f)
+                {
+                    mat.EnableKeyword("_EMISSION");
+                    mat.SetColor("_EmissionColor", def.Emission.gamma * def.EmissionStrength);
+                    mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.BakedEmissive;
+                }
+                else
+                {
+                    mat.DisableKeyword("_EMISSION");
+                    mat.SetColor("_EmissionColor", Color.black);
+                    mat.globalIlluminationFlags = MaterialGlobalIlluminationFlags.EmissiveIsBlack;
+                }
+
+                if (def.Linear.a < 1f)
+                    MakeTransparent(mat);
+                EditorUtility.SetDirty(mat);
+            }
+            log.AppendLine($"Materialen: {Materials.Length} in {MaterialDir}");
+        }
+
+        static void MakeTransparent(Material mat)
+        {
+            mat.SetFloat("_Surface", 1f);
+            mat.SetFloat("_Blend", 0f);
+            mat.SetFloat("_SrcBlend", (float)BlendMode.SrcAlpha);
+            mat.SetFloat("_DstBlend", (float)BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_SrcBlendAlpha", (float)BlendMode.One);
+            mat.SetFloat("_DstBlendAlpha", (float)BlendMode.OneMinusSrcAlpha);
+            mat.SetFloat("_ZWrite", 0f);
+            mat.SetOverrideTag("RenderType", "Transparent");
+            mat.EnableKeyword("_SURFACE_TYPE_TRANSPARENT");
+            mat.renderQueue = (int)RenderQueue.Transparent;
+            mat.SetShaderPassEnabled("DepthOnly", false);
+            mat.SetShaderPassEnabled("ShadowCaster", false);
+        }
+
+        static void RemapModelMaterials(StringBuilder log)
+        {
+            var count = 0;
+            foreach (var (name, _) in Assets)
+            {
+                var path = $"{ModelDir}/{name}.fbx";
+                if (AssetImporter.GetAtPath(path) is not ModelImporter importer)
+                {
+                    log.AppendLine($"!! Model ontbreekt: {path}");
+                    continue;
+                }
+                foreach (var def in Materials)
+                {
+                    var mat = AssetDatabase.LoadAssetAtPath<Material>($"{MaterialDir}/{def.Name}.mat");
+                    importer.AddRemap(new AssetImporter.SourceAssetIdentifier(typeof(Material), def.Name), mat);
+                }
+                importer.SaveAndReimport();
+                count++;
+            }
+            log.AppendLine($"Modellen (her)geïmporteerd met materiaal-remap: {count}");
+        }
+
+        // ------------------------------------------------------------------ assen
+
+        static void DetectAxes(StringBuilder log)
+        {
+            // Wall_4m loopt in Blender langs +X; de radiator steekt uit naar -Y.
+            var wall = MeasureModel("SM_Build_Wall_4m");
+            var radiator = MeasureModel("SM_Build_Radiator");
+            axisX = wall.center.x >= 0f ? 1f : -1f;
+            axisY = radiator.center.z <= 0f ? 1f : -1f;
+            log.AppendLine($"Assen: Blender X -> Unity {(axisX > 0 ? "+X" : "-X")}, Blender Y -> Unity {(axisY > 0 ? "+Z" : "-Z")} " +
+                           $"(Wall_4m size {wall.size}, Radiator size {radiator.size})");
+        }
+
+        static Bounds MeasureModel(string modelName)
+        {
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(LoadModel(modelName));
+            var b = RendererBounds(go);
+            Object.DestroyImmediate(go);
+            return b;
+        }
+
+        static Bounds RendererBounds(GameObject go)
+        {
+            var renderers = go.GetComponentsInChildren<Renderer>();
+            var b = renderers[0].bounds;
+            foreach (var r in renderers.Skip(1))
+                b.Encapsulate(r.bounds);
+            return b;
+        }
+
+        // ------------------------------------------------------------------ prefabs
+
+        static void BuildPrefabs(StringBuilder log)
+        {
+            foreach (var (name, kind) in Assets)
+            {
+                var model = LoadModel(name);
+                if (model == null)
+                    continue;
+                var go = (GameObject)PrefabUtility.InstantiatePrefab(model);
+                go.name = name;
+                Configure(go, kind);
+                PrefabUtility.SaveAsPrefabAsset(go, $"{PrefabDir}/{name}.prefab");
+                Object.DestroyImmediate(go);
+            }
+            log.AppendLine($"Prefabs: {Assets.Length} in {PrefabDir}");
+        }
+
+        static void Configure(GameObject go, Kind kind)
+        {
+            var meshes = go.GetComponentsInChildren<MeshFilter>();
+            switch (kind)
+            {
+                case Kind.Static:
+                case Kind.Light:
+                    foreach (var mf in meshes)
+                        FitBox(mf);
+                    SetStatic(go, go.name != "SM_Build_Window_Glass");
+                    if (kind == Kind.Light)
+                        AddCeilingLight(go);
+                    break;
+
+                case Kind.StaticUcx:
+                    SetStatic(go, true);   // colliders komen van UCX_ (postprocessor)
+                    break;
+
+                case Kind.StaticMeshCollider:
+                    foreach (var mf in meshes)
+                        mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                    go.AddComponent<TeleportationArea>();
+                    SetStatic(go, true);
+                    break;
+
+                case Kind.Floor:
+                    foreach (var mf in meshes)
+                        FitBox(mf);
+                    go.AddComponent<TeleportationArea>();
+                    SetStatic(go, true);
+                    break;
+
+                case Kind.Handle:
+                    foreach (var mf in meshes)
+                        FitBox(mf);
+                    go.AddComponent<XRSimpleInteractable>();
+                    break;
+
+                case Kind.Door:
+                    foreach (var mf in meshes)
+                        FitBox(mf);
+                    go.AddComponent<Rigidbody>().isKinematic = true;
+                    if (go.name == "SM_Build_Door_Classroom")
+                    {
+                        // Klink langs beide kanten, 7 cm van de vrije rand, op 1,05 m.
+                        AddChildPrefab(go.transform, "SM_Build_DoorHandle", "Handle_Front", B2U(0.82f, -0.02f, 1.05f), Quaternion.identity);
+                        AddChildPrefab(go.transform, "SM_Build_DoorHandle", "Handle_Back", B2U(0.82f, 0.02f, 1.05f), Quaternion.Euler(180f, 0f, 0f));
+                    }
+                    else
+                    {
+                        go.AddComponent<XRSimpleInteractable>();   // paniekbalk / blad zelf
+                    }
+                    // Klasdeur draait naar de kamerzijde (Blender -Y), nooddeur naar buiten.
+                    var swing = go.AddComponent<SwingDoor>();
+                    if (go.name == "SM_Build_Door_Emergency")
+                        SetOpenAngle(swing, -95f);
+                    break;
+
+                case Kind.DoubleDoor:
+                    foreach (var mf in meshes)
+                    {
+                        FitBox(mf);
+                        var leaf = mf.gameObject;
+                        leaf.AddComponent<Rigidbody>().isKinematic = true;
+                        leaf.AddComponent<XRSimpleInteractable>();
+                        var door = leaf.AddComponent<SwingDoor>();
+                        if (leaf.name.EndsWith("_R"))
+                            SetOpenAngle(door, -95f);
+                    }
+                    break;
+
+                case Kind.Grab:
+                    foreach (var mf in meshes)
+                        FitBox(mf);
+                    var body = go.AddComponent<Rigidbody>();
+                    body.mass = 6f;
+                    body.interpolation = RigidbodyInterpolation.Interpolate;
+                    go.AddComponent<XRGrabInteractable>();
+                    break;
+            }
+        }
+
+        static void SetOpenAngle(SwingDoor door, float angle)
+        {
+            var so = new SerializedObject(door);
+            so.FindProperty("openAngle").floatValue = angle;
+            so.ApplyModifiedPropertiesWithoutUndo();
+        }
+
+        static void FitBox(MeshFilter mf)
+        {
+            var box = mf.gameObject.AddComponent<BoxCollider>();
+            box.center = mf.sharedMesh.bounds.center;
+            box.size = mf.sharedMesh.bounds.size;
+        }
+
+        static void SetStatic(GameObject go, bool occluder)
+        {
+            var flags = StaticEditorFlags.ContributeGI | StaticEditorFlags.BatchingStatic |
+                        StaticEditorFlags.OccludeeStatic | StaticEditorFlags.ReflectionProbeStatic;
+            if (occluder)
+                flags |= StaticEditorFlags.OccluderStatic;
+            foreach (var t in go.GetComponentsInChildren<Transform>(true))
+                GameObjectUtility.SetStaticEditorFlags(t.gameObject, flags);
+        }
+
+        static void AddCeilingLight(GameObject go)
+        {
+            var lightGo = new GameObject("Light");
+            lightGo.transform.SetParent(go.transform, false);
+            lightGo.transform.localPosition = B2U(0f, 0f, -0.25f);
+            var light = lightGo.AddComponent<Light>();
+            light.type = LightType.Point;
+            light.range = 5f;
+            light.intensity = 1.5f;
+            light.color = new Color(1f, 0.97f, 0.9f);
+            light.lightmapBakeType = LightmapBakeType.Baked;
+            light.shadows = LightShadows.Soft;
+        }
+
+        static void AddChildPrefab(Transform parent, string prefabName, string childName, Vector3 localPos, Quaternion localRot)
+        {
+            var child = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab(prefabName));
+            child.name = childName;
+            child.transform.SetParent(parent, false);
+            child.transform.localPosition = localPos;
+            child.transform.localRotation = localRot;
+        }
+
+        // ------------------------------------------------------------------ testscene
+
+        static void BuildTestScene(Scene scene, StringBuilder log)
+        {
+            var room = new GameObject("Room_8x6").transform;
+            var walls = new GameObject("Walls").transform;
+            var props = new GameObject("Props").transform;
+            var floor = new GameObject("Floor").transform;
+            var ceiling = new GameObject("Ceiling").transform;
+            foreach (var t in new[] { walls, props, floor, ceiling })
+                t.SetParent(room, false);
+
+            // Vloer + plafond (4 x 3 tegels van 2 m)
+            for (var i = 0; i < 4; i++)
+            for (var j = 0; j < 3; j++)
+            {
+                var p = new Vector3(i * 2f + (axisX < 0 ? 2f : 0f), 0f, j * 2f + (axisY < 0 ? 2f : 0f));
+                Spawn("SM_Build_Floor_2x2", floor, p, Quaternion.identity);
+                Spawn("SM_Build_Ceiling_2x2", ceiling, p + Vector3.up * 3f, Quaternion.identity);
+            }
+
+            // Muren (tegen de klok in, kamerzijde naar binnen)
+            var south = Run(walls, new Vector3(0, 0, 0), Vector3.right, Vector3.forward, "SM_Build_Wall_2m", "SM_Build_Wall_Door", "SM_Build_Wall_4m");
+            var north = Run(walls, new Vector3(0, 0, 6), Vector3.right, Vector3.back, "SM_Build_Wall_Window", "SM_Build_Wall_Window", "SM_Build_Wall_Window", "SM_Build_Wall_2m");
+            var west = Run(walls, new Vector3(0, 0, 0), Vector3.forward, Vector3.right, "SM_Build_Wall_4m", "SM_Build_Wall_2m");
+            var east = Run(walls, new Vector3(8, 0, 0), Vector3.forward, Vector3.left, "SM_Build_Wall_Door", "SM_Build_Wall_4m");
+            foreach (var c in new[] { new Vector3(0, 0, 0), new Vector3(8, 0, 0), new Vector3(8, 0, 6), new Vector3(0, 0, 6) })
+                Spawn("SM_Build_Wall_Corner_In", walls, c, Quaternion.identity);
+
+            // Ramen: glas + radiator onder elk raam
+            foreach (var w in north.Where(w => w.name == "SM_Build_Wall_Window"))
+            {
+                SpawnLocal("SM_Build_Window_Glass", walls, w, 0.35f, 0f, 0.95f);
+                SpawnLocal("SM_Build_Radiator", props, w, 1.0f, -0.1f, 0f);
+            }
+
+            // Klasdeur (zuid) + nooddeur (oost), scharnier tegen het kozijn
+            var classDoor = south.First(w => w.name == "SM_Build_Wall_Door");
+            SpawnLocal("SM_Build_Door_Classroom", walls, classDoor, 0.555f, 0f, 0f);
+            SpawnLocal("SM_Build_LightSwitch", props, classDoor, 1.75f, -0.1f, 1.1f);
+            SpawnLocal("SM_Build_ExitSign", props, classDoor, 1.0f, -0.1f, 2.35f);
+            var emergency = east.First(w => w.name == "SM_Build_Wall_Door");
+            SpawnLocal("SM_Build_Door_Emergency", walls, emergency, 0.555f, 0f, 0f);
+            SpawnLocal("SM_Build_ExitSign", props, emergency, 1.0f, -0.1f, 2.35f);
+
+            var south4 = south.First(w => w.name == "SM_Build_Wall_4m");
+            SpawnLocal("SM_Build_Socket", props, south4, 1.0f, -0.1f, 0.3f);
+            SpawnLocal("SM_Build_Socket", props, south4, 3.0f, -0.1f, 0.3f);
+            SpawnLocal("SM_Build_Speaker", props, west.First(w => w.name == "SM_Build_Wall_4m"), 2.0f, -0.1f, 2.5f);
+            SpawnLocal("SM_Build_FireExtinguisher", props, east.First(w => w.name == "SM_Build_Wall_4m"), 0.4f, -0.25f, 0f);
+
+            foreach (var x in new[] { 2f, 6f })
+            foreach (var z in new[] { 1.5f, 4.5f })
+                Spawn("SM_Build_Light_TL", ceiling, new Vector3(x, 3f, z), Quaternion.identity);
+            Spawn("SM_Build_SmokeDetector", ceiling, new Vector3(4f, 3f, 3f), Quaternion.identity);
+
+            // Showcase: alle prefabs op een rij buiten de kamer, naast een referentiecapsule van 1,8 m
+            var showcase = new GameObject("Showcase").transform;
+            showcase.position = new Vector3(0f, 0f, -4f);
+            var capsule = GameObject.CreatePrimitive(PrimitiveType.Capsule);
+            capsule.name = "Ref_Capsule_1.8m";
+            Object.DestroyImmediate(capsule.GetComponent<Collider>());
+            capsule.transform.SetParent(showcase, false);
+            capsule.transform.localPosition = new Vector3(-1f, 0.9f, 0f);
+            capsule.transform.localScale = new Vector3(0.5f, 0.9f, 0.5f);
+            var cursor = 0f;
+            foreach (var (name, _) in Assets)
+            {
+                var go = Spawn(name, showcase, Vector3.zero, Quaternion.identity);
+                var b = RendererBounds(go);
+                go.transform.position += new Vector3(cursor - b.min.x, 0f, showcase.position.z - b.center.z);
+                cursor += b.size.x + 0.6f;
+            }
+
+            // XR rig
+            var rig = AssetDatabase.LoadAssetAtPath<GameObject>(XROriginPath);
+            if (rig != null)
+            {
+                var rigGo = (GameObject)PrefabUtility.InstantiatePrefab(rig, scene);
+                rigGo.transform.position = new Vector3(4f, 0f, 1.5f);
+                var cam = scene.GetRootGameObjects().FirstOrDefault(g => g.name == "Main Camera");
+                if (cam != null)
+                    Object.DestroyImmediate(cam);
+                log.AppendLine("XR Origin geplaatst (Complete XR Origin Set Up Variant)");
+            }
+            else
+            {
+                log.AppendLine($"!! XR Origin niet gevonden op {XROriginPath}");
+            }
+            log.AppendLine($"Testscene: kamer 8 x 6 m, {room.GetComponentsInChildren<Transform>().Length} transforms");
+        }
+
+        /// <summary>Plaatst muurstukken achter elkaar van start langs dir; de kamerzijde (Blender -Y) kijkt naar inward.</summary>
+        static List<(string name, Vector3 pivot, Quaternion rot)> Run(Transform parent, Vector3 start, Vector3 dir, Vector3 inward, params string[] pieces)
+        {
+            var result = new List<(string, Vector3, Quaternion)>();
+            var rot = Quaternion.LookRotation(inward) * Quaternion.Inverse(Quaternion.LookRotation(B2U(0, -1, 0)));
+            var along = rot * B2U(1, 0, 0);
+            var pos = start;
+            foreach (var piece in pieces)
+            {
+                var length = piece.Contains("4m") || piece.EndsWith("Door_Double") ? 4f : 2f;
+                // Lokale Blender-X van het stuk wijst langs 'along'; pivot aan het juiste uiteinde zetten.
+                var pivot = Vector3.Dot(along, dir) > 0f ? pos : pos + dir * length;
+                Spawn(piece, parent, pivot, rot);
+                result.Add((piece, pivot, rot));
+                pos += dir * length;
+            }
+            return result;
+        }
+
+        static GameObject SpawnLocal(string prefab, Transform parent, (string name, Vector3 pivot, Quaternion rot) wall, float bx, float by, float bz)
+            => Spawn(prefab, parent, wall.pivot + wall.rot * B2U(bx, by, bz), wall.rot);
+
+        static GameObject Spawn(string prefab, Transform parent, Vector3 position, Quaternion rotation)
+        {
+            var go = (GameObject)PrefabUtility.InstantiatePrefab(LoadPrefab(prefab), parent);
+            go.transform.SetPositionAndRotation(position, rotation);
+            return go;
+        }
+
+        // ------------------------------------------------------------------ helpers
+
+        static GameObject LoadModel(string name) => AssetDatabase.LoadAssetAtPath<GameObject>($"{ModelDir}/{name}.fbx");
+
+        static GameObject LoadPrefab(string name) => AssetDatabase.LoadAssetAtPath<GameObject>($"{PrefabDir}/{name}.prefab");
+
+        static void EnsureFolder(string path)
+        {
+            if (AssetDatabase.IsValidFolder(path))
+                return;
+            var parent = System.IO.Path.GetDirectoryName(path).Replace('\\', '/');
+            EnsureFolder(parent);
+            AssetDatabase.CreateFolder(parent, System.IO.Path.GetFileName(path));
+        }
+    }
+}

@@ -29,6 +29,7 @@ namespace VRSchool.Editor
         LaptopOpen,         // grab, deksel open
         LaptopClosed,       // grab, deksel dicht
         ProjectorScreen,    // statisch, doek niet statisch (oprollen = schalen)
+        Locker,             // kast statisch + MeshCollider (open vakken), elke *_Door* child: SwingDoor + XRSimpleInteractable
     }
 
     /// <summary>Eén asset: prefabnaam, bronmodel (FBX), categorie (submap onder Art/ en Prefabs/) en Kind.</summary>
@@ -77,7 +78,7 @@ namespace VRSchool.Editor
             Emission = new Color(er, eg, eb), EmissionStrength = emissionStrength,
         };
 
-        // Moet overeenkomen met MATERIALS in build_modular_kit.py en build_classroom_kit.py
+        // Moet overeenkomen met MATERIALS in build_modular_kit.py, build_classroom_kit.py en build_hallway_kit.py
         static readonly MaterialDef[] Materials =
         {
             // Fase 1
@@ -111,6 +112,10 @@ namespace VRSchool.Editor
             Def("M_Fabric_Dark", 0.03f, 0.03f, 0.035f, 1, 0, 0.95f),
             Def("M_Poster", 0.60f, 0.60f, 0.60f, 1, 0, 0.8f),
             Def("M_WorldMap", 0.15f, 0.35f, 0.60f, 1, 0, 0.8f),
+            // Fase 3
+            Def("M_Metal_Gold", 0.85f, 0.62f, 0.20f, 1, 1, 0.25f),
+            Def("M_Soil", 0.10f, 0.06f, 0.035f, 1, 0, 1f),
+            Def("M_Plant_Leaf", 0.08f, 0.30f, 0.06f, 1, 0, 0.7f),
         };
 
         // Massa (kg) voor grab-props; anders 1 kg.
@@ -122,6 +127,7 @@ namespace VRSchool.Editor
             ["SM_Prop_Pen"] = 0.02f, ["SM_Prop_Pencil"] = 0.01f, ["SM_Prop_Eraser"] = 0.02f, ["SM_Prop_Ruler"] = 0.03f,
             ["SM_Prop_Calculator"] = 0.15f, ["SM_Prop_PencilCase"] = 0.25f, ["SM_Prop_Backpack_A"] = 3f,
             ["SM_Prop_Backpack_B"] = 3f, ["SM_Prop_WaterBottle"] = 0.6f, ["SM_Prop_Chalk"] = 0.01f, ["SM_Prop_Marker"] = 0.02f,
+            ["SM_Prop_Trophy_A"] = 0.8f, ["SM_Prop_Trophy_B"] = 0.5f,
         };
 
         // ------------------------------------------------------------------ materialen
@@ -372,6 +378,25 @@ namespace VRSchool.Editor
                     SetStatic(go, false);
                     foreach (var cloth in go.GetComponentsInChildren<Transform>().Where(t => t.name.EndsWith("_Cloth")))
                         GameObjectUtility.SetStaticEditorFlags(cloth.gameObject, 0);
+                    break;
+
+                case Kind.Locker:
+                    SetStatic(go, true);
+                    foreach (var mf in meshes)
+                    {
+                        if (!mf.name.Contains("_Door"))
+                        {
+                            mf.gameObject.AddComponent<MeshCollider>().sharedMesh = mf.sharedMesh;
+                            continue;
+                        }
+                        // Deur: zelfde opbouw als de klasdeur (blad loopt langs Blender +X) -> +95° opent naar voren.
+                        var leaf = mf.gameObject;
+                        GameObjectUtility.SetStaticEditorFlags(leaf, 0);
+                        FitBox(mf);
+                        leaf.AddComponent<Rigidbody>().isKinematic = true;
+                        leaf.AddComponent<XRSimpleInteractable>();
+                        leaf.AddComponent<SwingDoor>();
+                    }
                     break;
             }
         }

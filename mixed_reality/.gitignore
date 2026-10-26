@@ -16,7 +16,7 @@
 # Asset Store tools
 /[Aa]ssets/AssetStoreTools*
 
-# Visual Studio cache
+# Visual Stcludio cache
 .vs/
 
 # Gradle cache (Android / Quest builds)

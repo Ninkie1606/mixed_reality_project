@@ -2,7 +2,7 @@
 
 Hier staan de **bronbestanden** (`.blend`) van alle 3D-modellen.
 Unity leest deze map niet: modellen gaan als **FBX** naar
-`mixed_reality/Assets/_Project/Models/`.
+`mixed_reality/Assets/Art/<Categorie>/` (Building, Classroom, Hallway, Props, ...).
 
 ```
 blender/
@@ -15,6 +15,7 @@ blender/
 ├── references/         ← referentiebeelden, schetsen, moodboard
 ├── tools/
 │   ├── export_to_unity.py              ← exportscript (zie onder)
+│   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1)
 │   └── presets/Unity_FBX.py            ← FBX-exportpreset
 └── _archive/           ← oude versies die je niet meer gebruikt
 ```
@@ -23,7 +24,7 @@ blender/
 
 | Wat | Afspraak |
 |---|---|
-| Blender-versie | **Blender 4.x LTS** (vul exacte versie in: `____`) |
+| Blender-versie | **Blender 5.2 LTS** (kit gebouwd met 5.2.2) |
 | Eenheden | Metric, Unit Scale **1.0** → 1 unit = 1 meter |
 | Eén bestand per | asset (of kleine groep die samen hoort) |
 | Eigenaar | Eén persoon bewerkt een `.blend` tegelijk (`git lfs lock`) |
@@ -59,7 +60,7 @@ bestandsnaam van de FBX.
 3. Ga naar de **Scripting**-tab → *Open* → `blender/tools/export_to_unity.py` → **Run Script**.
 
 Elk geselecteerd object wordt een aparte FBX in
-`mixed_reality/Assets/_Project/Models/<NaamVanObject>.fbx`, rond de wereldoorsprong
+`mixed_reality/Assets/Art/<CATEGORY>/<NaamVanObject>.fbx` (zet `CATEGORY` bovenaan het script), rond de wereldoorsprong
 en met de juiste assen en schaal voor Unity.
 
 ### Optie 2: handmatig met de preset
@@ -67,7 +68,13 @@ en met de juiste assen en schaal voor Unity.
    - Windows: `%APPDATA%\Blender Foundation\Blender\<versie>\scripts\presets\operator\export_scene.fbx\`
    - (maak de map `export_scene.fbx` aan als die niet bestaat)
 2. *File → Export → FBX* → kies bovenaan de preset **Unity_FBX**.
-3. Sla op in `mixed_reality/Assets/_Project/Models/`.
+3. Sla op in `mixed_reality/Assets/Art/<Categorie>/` (Building, Classroom, Hallway, Props, ...).
+
+### Modulaire gebouwkit (Fase 1)
+De kit is volledig procedureel: `tools/build_modular_kit.py` bouwt alle `SM_Build_*`-stukken,
+slaat `models/environment/SM_Build_Kit.blend` op en exporteert elke FBX naar `Assets/Art/Building/`.
+Aanpassen = het script wijzigen en opnieuw draaien (niet de .blend met de hand bewerken).
+Daarna in Unity: menu **VR School → Build Phase 1 - Modular Kit** (materialen, prefabs, testscene).
 
 ## Git
 

@@ -6,7 +6,7 @@ Dit project combineert 3D-modellen uit Blender met een interactieve Unity Mixed 
 
 - **`mixed_reality/`**: Het Unity-project met de MR/VR-interacties, scènes en assets.
 - **`blender/`**: De 3D-bronbestanden (`.blend`), textures en export-tools.
-  - Modellen worden conform afspraak als FBX geëxporteerd naar `mixed_reality/Assets/_Project/Models/`.
+  - Modellen worden conform afspraak als FBX geëxporteerd naar `mixed_reality/Assets/Art/<Categorie>/` (prefabs in `Assets/Prefabs/<Categorie>/`).
   - Raadpleeg [`blender/README.md`](blender/README.md) voor de naamgevingsconventies, Git LFS locking en het exportscript.
 
 ## Git & Bestandsbeheer

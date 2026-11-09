@@ -1,0 +1,476 @@
+{
+  "SM_Class_Desk_A": {
+    "tris": 90,
+    "materials": [
+      "M_Metal_Painted",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      0.7,
+      0.5,
+      0.76
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Chair_A": {
+    "tris": 84,
+    "materials": [
+      "M_Metal_Painted",
+      "M_Plastic_Chair"
+    ],
+    "size_m": [
+      0.4,
+      0.458,
+      0.795
+    ],
+    "ucx": 0
+  },
+  "SM_Class_TeacherDesk": {
+    "tris": 98,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      1.4,
+      0.702,
+      0.75
+    ],
+    "ucx": 0
+  },
+  "SM_Class_OfficeChair": {
+    "tris": 296,
+    "materials": [
+      "M_Fabric_Dark",
+      "M_Metal_Chrome",
+      "M_Plastic_Black"
+    ],
+    "size_m": [
+      0.596,
+      0.61,
+      1.056
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Chalkboard": {
+    "tris": 64,
+    "materials": [
+      "M_Chalkboard",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      3.08,
+      0.1,
+      1.295
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Whiteboard": {
+    "tris": 64,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Whiteboard"
+    ],
+    "size_m": [
+      2.44,
+      0.1,
+      1.255
+    ],
+    "ucx": 0
+  },
+  "SM_Class_SmartBoard": {
+    "tris": 30,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Screen"
+    ],
+    "size_m": [
+      1.95,
+      0.14,
+      1.23
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Projector": {
+    "tris": 72,
+    "materials": [
+      "M_Metal_White",
+      "M_Plastic_Black",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.3,
+      0.27,
+      0.42
+    ],
+    "ucx": 0
+  },
+  "SM_Class_ProjectorScreen": {
+    "tris": 66,
+    "materials": [
+      "M_Metal_White",
+      "M_Plastic_Black",
+      "M_Whiteboard"
+    ],
+    "size_m": [
+      2.0,
+      0.09,
+      1.518
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Cabinet": {
+    "tris": 72,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Plastic_Black",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      1.02,
+      0.48,
+      1.0
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Bookshelf": {
+    "tris": 66,
+    "materials": [
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      0.9,
+      0.32,
+      1.8
+    ],
+    "ucx": 0
+  },
+  "SM_Class_CoatRack": {
+    "tris": 178,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      1.2,
+      0.095,
+      0.1
+    ],
+    "ucx": 0
+  },
+  "SM_Class_TrashBin": {
+    "tris": 128,
+    "materials": [
+      "M_Plastic_Black"
+    ],
+    "size_m": [
+      0.32,
+      0.32,
+      0.36
+    ],
+    "ucx": 0
+  },
+  "SM_Class_WallClock": {
+    "tris": 394,
+    "materials": [
+      "M_Paint_Red",
+      "M_Plastic_Black",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.31,
+      0.042,
+      0.31
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Laptop": {
+    "tris": 54,
+    "materials": [
+      "M_Metal_White",
+      "M_Plastic_Black",
+      "M_Screen"
+    ],
+    "size_m": [
+      0.32,
+      0.22,
+      0.026
+    ],
+    "ucx": 0
+  },
+  "SM_Class_PC_Monitor": {
+    "tris": 44,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Screen"
+    ],
+    "size_m": [
+      0.54,
+      0.18,
+      0.44
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Keyboard": {
+    "tris": 162,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.44,
+      0.14,
+      0.022
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Corkboard": {
+    "tris": 42,
+    "materials": [
+      "M_Cork",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      1.26,
+      0.025,
+      0.96
+    ],
+    "ucx": 0
+  },
+  "SM_Class_PaperNote": {
+    "tris": 34,
+    "materials": [
+      "M_Paint_Red",
+      "M_Paper"
+    ],
+    "size_m": [
+      0.105,
+      0.009,
+      0.148
+    ],
+    "ucx": 0
+  },
+  "SM_Class_Poster_Frame": {
+    "tris": 34,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Poster"
+    ],
+    "size_m": [
+      0.624,
+      0.012,
+      0.871
+    ],
+    "ucx": 0
+  },
+  "SM_Class_WorldMap": {
+    "tris": 58,
+    "materials": [
+      "M_Wood_Dark",
+      "M_WorldMap"
+    ],
+    "size_m": [
+      1.72,
+      0.024,
+      1.064
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Book_A": {
+    "tris": 38,
+    "materials": [
+      "M_Paint_Red",
+      "M_Paper"
+    ],
+    "size_m": [
+      0.17,
+      0.24,
+      0.03
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Book_B": {
+    "tris": 38,
+    "materials": [
+      "M_Fabric_Blue",
+      "M_Paper"
+    ],
+    "size_m": [
+      0.21,
+      0.297,
+      0.02
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Book_C": {
+    "tris": 38,
+    "materials": [
+      "M_Paper",
+      "M_Plastic_Green"
+    ],
+    "size_m": [
+      0.15,
+      0.21,
+      0.04
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Notebook": {
+    "tris": 38,
+    "materials": [
+      "M_Paper",
+      "M_Plastic_Yellow"
+    ],
+    "size_m": [
+      0.21,
+      0.297,
+      0.008
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Pen": {
+    "tris": 48,
+    "materials": [
+      "M_Metal_Chrome",
+      "M_Plastic_Chair"
+    ],
+    "size_m": [
+      0.142,
+      0.01,
+      0.01
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Pencil": {
+    "tris": 52,
+    "materials": [
+      "M_Plastic_Pink",
+      "M_Plastic_Yellow",
+      "M_Rubber_Black",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      0.18,
+      0.009,
+      0.008
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Eraser": {
+    "tris": 12,
+    "materials": [
+      "M_Plastic_Pink"
+    ],
+    "size_m": [
+      0.05,
+      0.022,
+      0.012
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Ruler": {
+    "tris": 12,
+    "materials": [
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      0.3,
+      0.032,
+      0.003
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Calculator": {
+    "tris": 222,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Plastic_White",
+      "M_Screen"
+    ],
+    "size_m": [
+      0.08,
+      0.16,
+      0.017
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_PencilCase": {
+    "tris": 52,
+    "materials": [
+      "M_Fabric_Blue",
+      "M_Metal_Chrome"
+    ],
+    "size_m": [
+      0.2,
+      0.07,
+      0.069
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Backpack_A": {
+    "tris": 100,
+    "materials": [
+      "M_Fabric_Blue",
+      "M_Fabric_Dark",
+      "M_Metal_Chrome"
+    ],
+    "size_m": [
+      0.3,
+      0.247,
+      0.52
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Backpack_B": {
+    "tris": 100,
+    "materials": [
+      "M_Fabric_Dark",
+      "M_Fabric_Red",
+      "M_Metal_Chrome"
+    ],
+    "size_m": [
+      0.3,
+      0.247,
+      0.52
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_WaterBottle": {
+    "tris": 164,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Plastic_Green"
+    ],
+    "size_m": [
+      0.07,
+      0.07,
+      0.242
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Chalk": {
+    "tris": 28,
+    "materials": [
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.08,
+      0.011,
+      0.011
+    ],
+    "ucx": 0
+  },
+  "SM_Prop_Marker": {
+    "tris": 88,
+    "materials": [
+      "M_Plastic_Black",
+      "M_Plastic_White"
+    ],
+    "size_m": [
+      0.15,
+      0.019,
+      0.019
+    ],
+    "ucx": 0
+  }
+}

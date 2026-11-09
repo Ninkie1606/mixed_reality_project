@@ -187,6 +187,50 @@ class MB:
             j = (i + 1) % n
             self._face((a[i], a[j], b[j], b[i]), mat)
 
+    def lathe(self, profile, mat, base=(0, 0, 0), axis='Z', seg=12):
+        """Omwentelingslichaam: profile = [(straal, hoogte), ...] langs 'axis' vanaf 'base'.
+        Straal 0 = één punt op de as (gesloten uiteinde)."""
+        bx, by, bz = base
+
+        def p(r, a, h):
+            c, s = r * math.cos(a), r * math.sin(a)
+            if axis == 'Z':
+                return (bx + c, by + s, bz + h)
+            if axis == 'Y':
+                return (bx + c, by + h, bz + s)
+            return (bx + h, by + c, bz + s)
+
+        rings = []
+        for r, h in profile:
+            if r == 0:
+                rings.append([self.bm.verts.new(p(0, 0, h))] * seg)
+            else:
+                rings.append([self.bm.verts.new(p(r, 2 * math.pi * i / seg, h)) for i in range(seg)])
+        for k in range(len(profile) - 1):
+            a, b = rings[k], rings[k + 1]
+            ra, rb = profile[k][0], profile[k + 1][0]
+            if ra == 0 and rb == 0:
+                continue
+            for i in range(seg):
+                j = (i + 1) % seg
+                if ra == 0:
+                    verts = (a[0], b[j], b[i])
+                elif rb == 0:
+                    verts = (a[i], a[j], b[0])
+                else:
+                    verts = (a[i], a[j], b[j], b[i])
+                self._face(verts, mat, smooth=True)
+
+    def mark(self):
+        """Huidig aantal vertices; gebruik met transform_since om net gebouwde delen te draaien."""
+        return len(self.bm.verts)
+
+    def transform_since(self, start, matrix):
+        """Past 'matrix' (mathutils.Matrix 4x4) toe op alle vertices die na mark() zijn aangemaakt."""
+        self.bm.verts.ensure_lookup_table()
+        for v in list(self.bm.verts)[start:]:
+            v.co = matrix @ v.co
+
     def finish(self, name, coll, parent=None, location=(0, 0, 0)):
         bm = self.bm
         bmesh.ops.remove_doubles(bm, verts=bm.verts, dist=1e-5)
@@ -572,34 +616,52 @@ def export_fbx(root, path):
     root.location = loc
 
 
-def main(export=True):
-    if bpy.context.object and bpy.context.object.mode != 'OBJECT':
-        bpy.ops.object.mode_set(mode='OBJECT')
+def fill_uv(obj):
+    """UV0 = volledige 0..1 over de XZ-bounding box (posters, kaarten: textures passen precies)."""
+    me = obj.data
+    xs = [v.co.x for v in me.vertices]
+    zs = [v.co.z for v in me.vertices]
+    w, h = (max(xs) - min(xs)) or 1, (max(zs) - min(zs)) or 1
+    uv = me.uv_layers["UVMap"].data
+    for loop in me.loops:
+        co = me.vertices[loop.vertex_index].co
+        uv[loop.index].uv = ((co.x - min(xs)) / w, (co.z - min(zs)) / h)
 
-    # Oude kit opruimen (alleen onze eigen collection)
-    old = bpy.data.collections.get(KIT_COLLECTION)
-    if old:
-        for o in list(old.all_objects):
+
+def remove_kit_collections():
+    """Verwijdert alle *_Kit-collections uit de open scene (de .blend-bestanden op schijf blijven)."""
+    for coll in [c for c in bpy.context.scene.collection.children if c.name.endswith("_Kit")]:
+        for o in list(coll.all_objects):
             bpy.data.objects.remove(o, do_unlink=True)
-        for c in list(old.children_recursive):
+        for c in list(coll.children_recursive):
             bpy.data.collections.remove(c)
-        bpy.data.collections.remove(old)
+        bpy.data.collections.remove(coll)
     for me in [m for m in bpy.data.meshes if m.users == 0]:
         bpy.data.meshes.remove(me)
 
-    kit = bpy.data.collections.new(KIT_COLLECTION)
+
+def build_kit(assets, collection_name, blend_path, export_dir_for, world_uv=(), export=True):
+    """Bouwt 'assets' [(naam, builder)], slaat 'blend_path' op en exporteert elke root naar export_dir_for(naam).
+    Objecten met custom property 'uv_fill' krijgen UV0 over de volle 0..1."""
+    if bpy.context.object and bpy.context.object.mode != 'OBJECT':
+        bpy.ops.object.mode_set(mode='OBJECT')
+    remove_kit_collections()
+
+    kit = bpy.data.collections.new(collection_name)
     bpy.context.scene.collection.children.link(kit)
 
     report = {}
     cursor_x = 0.0
-    for name, build in ASSETS:
+    for name, build in assets:
         coll = bpy.data.collections.new(name)
         kit.children.link(coll)
         root = build(name, coll)
         meshes = [o for o in [root] + list(root.children_recursive)
                   if o.type == 'MESH' and not o.name.startswith("UCX_")]
         for o in meshes:
-            unwrap(o, name in WORLD_UV)
+            unwrap(o, name in world_uv)
+            if o.get("uv_fill"):
+                fill_uv(o)
         bpy.context.view_layer.update()
         # Bounding box (in lokale ruimte van root, incl. children)
         pts = []
@@ -618,18 +680,23 @@ def main(export=True):
             "ucx": len([o for o in root.children_recursive if o.name.startswith("UCX_")]),
         }
 
-    os.makedirs(os.path.dirname(BLEND_PATH), exist_ok=True)
-    bpy.ops.wm.save_as_mainfile(filepath=BLEND_PATH, relative_remap=True)
+    os.makedirs(os.path.dirname(blend_path), exist_ok=True)
+    bpy.ops.wm.save_as_mainfile(filepath=blend_path, relative_remap=True)
 
     if export:
-        os.makedirs(EXPORT_DIR, exist_ok=True)
-        for name, _ in ASSETS:
-            export_fbx(bpy.data.objects[name], os.path.join(EXPORT_DIR, name + ".fbx"))
+        for name, _ in assets:
+            out_dir = export_dir_for(name)
+            os.makedirs(out_dir, exist_ok=True)
+            export_fbx(bpy.data.objects[name], os.path.join(out_dir, name + ".fbx"))
         bpy.ops.wm.save_mainfile()
 
-    with open(os.path.join(os.path.dirname(BLEND_PATH), "SM_Build_Kit_report.json"), "w") as f:
+    with open(os.path.splitext(blend_path)[0] + "_report.json", "w") as f:
         json.dump(report, f, indent=2)
     return report
+
+
+def main(export=True):
+    return build_kit(ASSETS, KIT_COLLECTION, BLEND_PATH, lambda name: EXPORT_DIR, WORLD_UV, export)
 
 
 if __name__ == "__main__":

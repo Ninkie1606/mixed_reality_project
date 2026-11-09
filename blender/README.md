@@ -15,7 +15,12 @@ blender/
 ├── references/         ← referentiebeelden, schetsen, moodboard
 ├── tools/
 │   ├── export_to_unity.py              ← exportscript (zie onder)
-│   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1)
+│   ├── build_modular_kit.py            ← genereert de modulaire gebouwkit (Fase 1) + gedeelde helpers
+│   ├── build_classroom_kit.py          ← genereert klaslokaal-meubels en grab-props (Fase 2)
+│   ├── build_hallway_kit.py            ← genereert gang-assets: lockers, vitrine, automaat, ... (Fase 3)
+│   ├── build_cafeteria_kit.py          ← genereert refter-assets: tafel, stoel, toog, microgolf, dienblad (Fase 4)
+│   ├── build_toilets_kit.py            ← genereert toilet-assets: cabine, toilet, lavabo, spiegel, ... (Fase 4)
+│   ├── build_outdoor_kit.py            ← genereert gevel, ingang, grond, bomen, hek, ... (Fase 5)
 │   ├── build_graffiti_controls.py      ← controls-graffiti: texture + wandquad
 │   └── presets/Unity_FBX.py            ← FBX-exportpreset
 └── _archive/           ← oude versies die je niet meer gebruikt

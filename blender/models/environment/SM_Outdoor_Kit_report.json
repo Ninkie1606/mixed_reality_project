@@ -1,0 +1,176 @@
+{
+  "SM_Out_Facade_4m": {
+    "tris": 232,
+    "materials": [
+      "M_Brick",
+      "M_Concrete",
+      "M_Glass_Dark",
+      "M_Metal_Painted"
+    ],
+    "size_m": [
+      4.04,
+      0.38,
+      6.52
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Facade_Corner": {
+    "tris": 22,
+    "materials": [
+      "M_Brick",
+      "M_Concrete"
+    ],
+    "size_m": [
+      0.4,
+      0.4,
+      6.52
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Facade_Entrance_8m": {
+    "tris": 1036,
+    "materials": [
+      "M_Brick",
+      "M_Concrete",
+      "M_Emissive_Light",
+      "M_Floor_Linoleum",
+      "M_Glass",
+      "M_Glass_Dark",
+      "M_Metal_Chrome",
+      "M_Metal_Painted",
+      "M_Wall_Paint_White"
+    ],
+    "size_m": [
+      8.04,
+      5.7,
+      6.57
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Ground_Paving_4x4": {
+    "tris": 10,
+    "materials": [
+      "M_Paving"
+    ],
+    "size_m": [
+      4.0,
+      4.0,
+      0.12
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Ground_Grass_20x20": {
+    "tris": 10,
+    "materials": [
+      "M_Grass"
+    ],
+    "size_m": [
+      20.0,
+      20.0,
+      0.1
+    ],
+    "ucx": 0
+  },
+  "SM_Out_SchoolSign": {
+    "tris": 498,
+    "materials": [
+      "M_Concrete",
+      "M_Metal_Painted",
+      "M_Sign_Letters"
+    ],
+    "size_m": [
+      1.6,
+      0.4,
+      1.4
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Bench": {
+    "tris": 80,
+    "materials": [
+      "M_Concrete",
+      "M_Wood_Light"
+    ],
+    "size_m": [
+      1.8,
+      0.443,
+      0.45
+    ],
+    "ucx": 0
+  },
+  "SM_Out_BikeRack": {
+    "tris": 220,
+    "materials": [
+      "M_Metal_Chrome"
+    ],
+    "size_m": [
+      2.85,
+      0.65,
+      0.772
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Tree_A": {
+    "tris": 206,
+    "materials": [
+      "M_Plant_Leaf",
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      3.7,
+      3.2,
+      5.3
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Tree_B": {
+    "tris": 54,
+    "materials": [
+      "M_Plant_Conifer",
+      "M_Wood_Dark"
+    ],
+    "size_m": [
+      3.2,
+      3.2,
+      5.9
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Fence_Segment": {
+    "tris": 178,
+    "materials": [
+      "M_Metal_Painted"
+    ],
+    "size_m": [
+      2.04,
+      0.08,
+      1.55
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Gate": {
+    "tris": 404,
+    "materials": [
+      "M_Metal_Painted"
+    ],
+    "size_m": [
+      4.12,
+      0.12,
+      1.6
+    ],
+    "ucx": 0
+  },
+  "SM_Out_Lamppost": {
+    "tris": 108,
+    "materials": [
+      "M_Emissive_Light",
+      "M_Metal_Painted"
+    ],
+    "size_m": [
+      0.44,
+      0.418,
+      4.05
+    ],
+    "ucx": 0
+  }
+}

@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1534f69428d34854cb7ccae18cf71046, type: 3}
+  m_Name: SMS_Fase5_Lichtpunt_Steun
+  m_EditorClassIdentifier: Assembly-CSharp::VRSchool.Notifications.NotificationData
+  sender: Vriend(in)
+  senderColor: {r: 1, g: 0.85, b: 0.4, a: 1}
+  message: Geen stress voor vandaag. Laat maar weten als je even wilt praten, er
+    is geen haast.
+  displayDuration: 5.5
+  notificationSound: {fileID: 0}
+  triggerHaptics: 1
+  hapticAmplitude: 0.45
+  hapticDuration: 0.2

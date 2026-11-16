@@ -7,6 +7,8 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.Rendering;
 using UnityEngine.SceneManagement;
+using UnityEngine.XR.Interaction.Toolkit.Interactables;
+using VRSchool.Interaction;
 using VRSchool.Visual;
 using static VRSchool.Editor.VRSchoolBuildCore;
 using Object = UnityEngine.Object;
@@ -33,6 +35,7 @@ namespace VRSchool.Editor
         const string ClassroomPath = "Assets/Scenes/Classroom_01.unity";
         const string CafeteriaPath = "Assets/Scenes/Cafeteria_01.unity";
         const string ConcretePath = "Assets/Art/Materials/M_Concrete.mat";
+        const string BrickPath = "Assets/Art/Materials/M_Brick.mat";
 
         // Gebouw
         const float FrontZ = 16f, BackZ = 42.2f, SideX = 16f, FacadeHeight = 6.4f;
@@ -42,6 +45,15 @@ namespace VRSchool.Editor
         const float EntryX = 2.1f;                         // gridlijnen van de instapgang (±)
         const float Face = 0.1f;                           // halve muurdikte
         const float Ceiling = 3f;
+
+        // Eindeloze gang: de hoofdgang loopt door de oostgevel en de terreinmuur nog 300 m verder.
+        // Donkere mist binnen (InteriorZone) laat hem in het zwart verdwijnen; de TL's stoppen na 200 m.
+        const float EndlessLength = 300f, EndlessLitLength = 200f, EndlessSegment = 12f;
+
+        // Terreinmuur rond het hele grasveld (x -20..20, z -12..48): de start en de poort liggen erbinnen.
+        // 4 m hoog: vanaf ooghoogte binnen de muur is niets lager dan 3,4 m erachter te zien (de gang buiten de muur).
+        const float PerimeterX = 20f, PerimeterFrontZ = -12f, PerimeterBackZ = 48f, PerimeterHeight = 4f, PerimeterHalf = 0.15f;
+        const float WingRoofTop = 3.4f, WingSkin = 0.3f;   // dak en baksteenhuid van de gang tussen gebouw en terreinmuur
 
         [Flags] enum Side { None = 0, N = 1, S = 2, W = 4, E = 8 }
 
@@ -85,7 +97,9 @@ namespace VRSchool.Editor
                 BuildShell(shell, log);
                 FixGround(outdoor, log);
                 BuildCorridors(corridors, log);
+                BuildEndlessCorridor(corridors, log);
                 BuildRooms(rooms, log);
+                BuildPerimeterWall(Child(environment, "PerimeterWall"), log);
                 PlaceGraffiti(Child(environment, "Graffiti"), log);
                 AddInteriorZone(systems, log);
 
@@ -157,26 +171,60 @@ namespace VRSchool.Editor
             BuildPrefabs(defs, log);
         }
 
+        /// <summary>
+        /// Gevels in traveeën per lokaal: elke travee loopt van gridlijn tot gridlijn (midden van de 0,2 m tussen twee lokalen),
+        /// zodat een binnenmuur altijd op baksteen tussen twee ramen uitkomt en nooit midden door een raam.
+        /// De blinde graffitimodule (x -8..-4) en de ingang (x -4..4) uit Entrance_01 blijven staan.
+        /// </summary>
         static void BuildShell(Transform shell, StringBuilder log)
         {
-            var depth = BackZ - FrontZ;
-            var sideModules = Mathf.RoundToInt(depth / 4f);
-            FacadeRun(shell, new Vector3(-SideX, 0f, FrontZ), Vector3.forward, Vector3.left, sideModules, depth / sideModules);
-            FacadeRun(shell, new Vector3(SideX, 0f, FrontZ), Vector3.forward, Vector3.right, sideModules, depth / sideModules);
-            FacadeRun(shell, new Vector3(-SideX, 0f, BackZ), Vector3.right, Vector3.forward, 8, 4f);
+            foreach (var piece in shell.Cast<Transform>().Where(t => t.name == "SM_Out_Facade_4m" && Mathf.Abs(Center(t).z - FrontZ) < 1f).ToArray())
+                Object.DestroyImmediate(piece.gameObject);
+            // voor: kantoor | klas A tot de blinde module; klas B | leraarskamer vanaf de ingang
+            Bays(shell, new Vector3(-SideX, 0f, FrontZ), Vector3.right, Vector3.back, (5.8f, 2), (2.2f, 1));
+            Bays(shell, new Vector3(4f, 0f, FrontZ), Vector3.right, Vector3.back, (6.2f, 2), (5.8f, 2));
+            // achter: refter | toiletten | bibliotheek | computerlokaal
+            Bays(shell, new Vector3(-SideX, 0f, BackZ), Vector3.right, Vector3.forward, (10.1f, 3), (5.8f, 2), (8.2f, 2), (7.9f, 2));
+            // zijkanten: voorste lokaal | einde hoofdgang | achterste lokaal; oost blijft de gang open (eindeloze gang)
+            Bays(shell, new Vector3(-SideX, 0f, FrontZ), Vector3.forward, Vector3.left, (HallSouthZ - FrontZ, 3), (HallNorthZ - HallSouthZ, 1), (BackZ - HallNorthZ, 3));
+            Bays(shell, new Vector3(SideX, 0f, FrontZ), Vector3.forward, Vector3.right, (HallSouthZ - FrontZ, 3), (HallNorthZ - HallSouthZ, 0), (BackZ - HallNorthZ, 3));
             foreach (var x in new[] { -SideX, SideX })
                 Spawn("SM_Out_Facade_Corner", shell, new Vector3(x, 0f, BackZ), Quaternion.identity);
 
-            // Plat dak binnen de dakrand
-            var roof = GameObject.CreatePrimitive(PrimitiveType.Cube);
-            roof.name = "Roof";
-            Object.DestroyImmediate(roof.GetComponent<Collider>());
-            roof.transform.SetParent(shell, false);
-            roof.transform.position = new Vector3(0f, FacadeHeight - 0.1f, (FrontZ + BackZ) / 2f);
-            roof.transform.localScale = new Vector3(2f * SideX, 0.2f, depth);
-            roof.GetComponent<MeshRenderer>().sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(ConcretePath);
-            GameObjectUtility.SetStaticEditorFlags(roof, StaticEditorFlags.BatchingStatic | StaticEditorFlags.ContributeGI);
-            log.AppendLine($"Gebouw: {2 * SideX} x {depth:0.0} m, zijgevels {sideModules} x {depth / sideModules:0.00} m, achtergevel 8 x 4 m, dak");
+            // Boven de doorgang naar de eindeloze gang: baksteen tot de dakrand (de kitmaterialen zijn effen kleuren, dus een kubus past naadloos)
+            var half = 0.15f;
+            Box(shell, "Passage_Lintel", new Vector3(SideX - half, Ceiling, HallSouthZ), new Vector3(SideX + half, FacadeHeight, HallNorthZ), BrickPath, true);
+            Box(shell, "Passage_RoofEdge", new Vector3(SideX - half - 0.02f, FacadeHeight, HallSouthZ), new Vector3(SideX + half + 0.05f, FacadeHeight + 0.12f, HallNorthZ), ConcretePath, false);
+
+            var depth = BackZ - FrontZ;
+            Box(shell, "Roof", new Vector3(-SideX, FacadeHeight - 0.2f, FrontZ), new Vector3(SideX, FacadeHeight, BackZ), ConcretePath, false);
+            log.AppendLine($"Gebouw: {2 * SideX} x {depth:0.0} m, gevels in traveeën per lokaal, doorgang oost naar de eindeloze gang, dak");
+        }
+
+        /// <summary>Opeenvolgende traveeën langs dir: per (lengte, aantal) evenveel gelijke modules; aantal 0 = open laten.</summary>
+        static void Bays(Transform parent, Vector3 start, Vector3 dir, Vector3 outward, params (float length, int count)[] bays)
+        {
+            foreach (var (length, count) in bays)
+            {
+                if (count > 0)
+                    FacadeRun(parent, start, dir, outward, count, length / count);
+                start += dir * length;
+            }
+        }
+
+        /// <summary>Kubus van min tot max met een kitmateriaal; collider alleen waar de speler ertegen kan lopen.</summary>
+        static GameObject Box(Transform parent, string name, Vector3 min, Vector3 max, string materialPath, bool collider)
+        {
+            var go = GameObject.CreatePrimitive(PrimitiveType.Cube);
+            go.name = name;
+            if (!collider)
+                Object.DestroyImmediate(go.GetComponent<Collider>());
+            go.transform.SetParent(parent, false);
+            go.transform.position = (min + max) / 2f;
+            go.transform.localScale = max - min;
+            go.GetComponent<MeshRenderer>().sharedMaterial = AssetDatabase.LoadAssetAtPath<Material>(materialPath);
+            GameObjectUtility.SetStaticEditorFlags(go, StaticEditorFlags.BatchingStatic | StaticEditorFlags.ContributeGI);
+            return go;
         }
 
         /// <summary>Gevelmodules (4 m, buitenkant = Blender -Y) achter elkaar; geschaald als de lengte geen 4 m is.</summary>
@@ -266,14 +314,61 @@ namespace VRSchool.Editor
             Spawn("SM_Hall_Bench", props, new Vector3(3.3f, 0f, north - 0.3f), toSouth);
             foreach (var x in new[] { 11.8f, 13.3f })
                 Spawn("SM_Hall_Locker_Row_5", lockers, new Vector3(x, 0f, north), toSouth);
-            foreach (var x in new[] { -15.4f, 15.4f })
-            {
-                Spawn("SM_Hall_Planter", props, new Vector3(x, 0f, midZ), Quaternion.identity);
-                Spawn("SM_Hall_Plant", props, new Vector3(x, 0.40f, midZ), Quaternion.Euler(0f, x * 11f, 0f));
-            }
+            // alleen aan het westelijke einde: het oosten loopt door in de eindeloze gang
+            Spawn("SM_Hall_Planter", props, new Vector3(-15.4f, 0f, midZ), Quaternion.identity);
+            Spawn("SM_Hall_Plant", props, new Vector3(-15.4f, 0.40f, midZ), Quaternion.Euler(0f, -15.4f * 11f, 0f));
             Spawn("SM_Build_FireExtinguisher", props, new Vector3(-6.8f, 0f, south + 0.15f), Quaternion.identity);
             Spawn("SM_Build_FireExtinguisher", props, new Vector3(7.2f, 0f, north - 0.15f), Quaternion.identity);
             log.AppendLine($"Gangen: instapgang {HallSouthZ - EntryWallZ:0.0} m, hoofdgang {2 * SideX} m met {count + 2} lockerblokken");
+        }
+
+        /// <summary>
+        /// Verlengt de hoofdgang naar het oosten met EndlessLength: om de EndlessSegment meter een gesloten klasdeur
+        /// (zuid en noord verspringend) en twee lockerblokken per kant. De deuren zijn op slot: erachter is niets.
+        /// Tussen de oostgevel en de terreinmuur krijgt de gang een baksteenhuid en een dak; verder ziet niemand de buitenkant.
+        /// </summary>
+        static void BuildEndlessCorridor(Transform corridors, StringBuilder log)
+        {
+            var wing = Child(corridors, "EndlessCorridor");
+            var walls = Child(wing, "Walls");
+            var props = Child(wing, "Props");
+            var lockers = Child(wing, "Lockers");
+            float x0 = SideX, x1 = SideX + EndlessLength;
+            FloorCeiling(wing, x0, HallSouthZ, x1, HallNorthZ, 6f);
+            var midZ = (HallSouthZ + HallNorthZ) / 2f;
+            var ceiling = Child(wing, "Ceiling");
+            for (var x = x0 + 2f; x < x0 + EndlessLitLength; x += 4f)
+                Spawn("SM_Build_Light_TL", ceiling, new Vector3(x, Ceiling, midZ), Quaternion.identity);
+
+            float south = HallSouthZ + Face, north = HallNorthZ - Face;
+            for (var a = x0; a < x1 - 0.01f; a += EndlessSegment)
+            {
+                var b = a + EndlessSegment;
+                WallWithDoor(walls, props, new Vector3(a, 0f, HallSouthZ), new Vector3(b, 0f, HallSouthZ), Vector3.forward, 3f);
+                WallWithDoor(walls, props, new Vector3(a, 0f, HallNorthZ), new Vector3(b, 0f, HallNorthZ), Vector3.back, 9f);
+                foreach (var dx in new[] { 6.25f, 7.75f })
+                    Spawn("SM_Hall_Locker_Row_5", lockers, new Vector3(a + dx, 0f, south), Facing(Vector3.forward));
+                foreach (var dx in new[] { 3.25f, 4.75f })
+                    Spawn("SM_Hall_Locker_Row_5", lockers, new Vector3(a + dx, 0f, north), Facing(Vector3.back));
+            }
+            PlainWall(walls, new Vector3(x1, 0f, HallSouthZ), new Vector3(x1, 0f, HallNorthZ), Vector3.left);
+
+            var doors = walls.GetComponentsInChildren<SwingDoor>(true);
+            foreach (var door in doors)
+            {
+                var leaf = door.gameObject;
+                Object.DestroyImmediate(door);
+                foreach (var interactable in leaf.GetComponentsInChildren<XRBaseInteractable>(true))
+                    Object.DestroyImmediate(interactable);
+            }
+
+            // buitenkant tussen oostgevel en terreinmuur
+            var skin = Child(wing, "Exterior");
+            float xa = SideX + 0.15f, xb = PerimeterX - PerimeterHalf;
+            Box(skin, "Skin_S", new Vector3(xa, 0f, HallSouthZ - Face - WingSkin), new Vector3(xb, WingRoofTop, HallSouthZ - Face), BrickPath, true);
+            Box(skin, "Skin_N", new Vector3(xa, 0f, HallNorthZ + Face), new Vector3(xb, WingRoofTop, HallNorthZ + Face + WingSkin), BrickPath, true);
+            Box(skin, "Roof", new Vector3(SideX, Ceiling + 0.1f, HallSouthZ - Face - WingSkin), new Vector3(xb, WingRoofTop, HallNorthZ + Face + WingSkin), ConcretePath, false);
+            log.AppendLine($"Eindeloze gang: {EndlessLength} m oostwaarts, {doors.Length} deuren op slot, TL's tot {EndlessLitLength} m");
         }
 
         // ------------------------------------------------------------------ lokalen
@@ -540,16 +635,19 @@ namespace VRSchool.Editor
             PlainWall(walls, d0 + dir * 2f, b, inward);
         }
 
-        /// <summary>Vloer- en plafondtegels (2 x 2 m) over [x0,x1] x [z0,z1]; de laatste rij/kolom wordt geschaald.</summary>
-        static void FloorCeiling(Transform room, float x0, float z0, float x1, float z1)
+        /// <summary>
+        /// Vloer- en plafondtegels over [x0,x1] x [z0,z1], 2 m diep en tileX breed (2 x 2 m-tegel geschaald);
+        /// de laatste rij/kolom wordt geschaald.
+        /// </summary>
+        static void FloorCeiling(Transform room, float x0, float z0, float x1, float z1, float tileX = 2f)
         {
             var floor = Child(room, "Floor");
             var ceiling = Child(room, "Ceiling");
             var corner = B2U(1f, 1f, 0f);
-            for (var x = x0; x < x1 - 0.01f; x += 2f)
+            for (var x = x0; x < x1 - 0.01f; x += tileX)
             for (var z = z0; z < z1 - 0.01f; z += 2f)
             {
-                var w = Mathf.Min(2f, x1 - x);
+                var w = Mathf.Min(tileX, x1 - x);
                 var d = Mathf.Min(2f, z1 - z);
                 var p = new Vector3(corner.x < 0 ? x + w : x, 0f, corner.z < 0 ? z + d : z);
                 var scale = new Vector3(w / 2f, 1f, d / 2f);
@@ -578,6 +676,20 @@ namespace VRSchool.Editor
             log.AppendLine($"Graffiti op de voorgevel: {b.size.x:0.00} x {b.size.y:0.00} m rond ({b.center.x:0.0}, {b.center.y:0.0}, {b.max.z:0.00})");
         }
 
+        /// <summary>Betonmuur rond het grasveld; in de oostmuur een opening met latei waar de eindeloze gang doorloopt.</summary>
+        static void BuildPerimeterWall(Transform parent, StringBuilder log)
+        {
+            float h = PerimeterHeight, t = PerimeterHalf, x = PerimeterX;
+            Box(parent, "Wall_Front", new Vector3(-x - t, 0f, PerimeterFrontZ - t), new Vector3(x + t, h, PerimeterFrontZ + t), ConcretePath, true);
+            Box(parent, "Wall_Back", new Vector3(-x - t, 0f, PerimeterBackZ - t), new Vector3(x + t, h, PerimeterBackZ + t), ConcretePath, true);
+            Box(parent, "Wall_West", new Vector3(-x - t, 0f, PerimeterFrontZ), new Vector3(-x + t, h, PerimeterBackZ), ConcretePath, true);
+            float gap0 = HallSouthZ - Face - WingSkin, gap1 = HallNorthZ + Face + WingSkin;
+            Box(parent, "Wall_East_Front", new Vector3(x - t, 0f, PerimeterFrontZ), new Vector3(x + t, h, gap0), ConcretePath, true);
+            Box(parent, "Wall_East_Back", new Vector3(x - t, 0f, gap1), new Vector3(x + t, h, PerimeterBackZ), ConcretePath, true);
+            Box(parent, "Wall_East_Lintel", new Vector3(x - t, WingRoofTop, gap0), new Vector3(x + t, h, gap1), ConcretePath, false);
+            log.AppendLine($"Terreinmuur: {2 * x} x {PerimeterBackZ - PerimeterFrontZ} m, {h} m hoog, opening voor de eindeloze gang");
+        }
+
         static void AddInteriorZone(Transform systems, StringBuilder log)
         {
             var go = new GameObject("InteriorZone");
@@ -588,6 +700,13 @@ namespace VRSchool.Editor
             var box = go.AddComponent<BoxCollider>();
             box.isTrigger = true;
             box.size = max - min;
+            // tweede box: de eindeloze gang (alleen zijn eigen strook, zodat de tuin ernaast buiten blijft)
+            var wingMin = new Vector3(SideX, 0f, HallSouthZ);
+            var wingMax = new Vector3(SideX + EndlessLength, Ceiling + 0.2f, HallNorthZ);
+            var wing = go.AddComponent<BoxCollider>();
+            wing.isTrigger = true;
+            wing.center = (wingMin + wingMax) / 2f - go.transform.position;
+            wing.size = wingMax - wingMin;
 
             var focus = Object.FindObjectsByType<FocusOnTarget>(FindObjectsInactive.Include).FirstOrDefault();
             var zone = new SerializedObject(go.AddComponent<InteriorZone>());

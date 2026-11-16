@@ -14,6 +14,21 @@
     ],
     "ucx": 0
   },
+  "SM_Out_Facade_4m_Blank": {
+    "tris": 172,
+    "materials": [
+      "M_Brick",
+      "M_Concrete",
+      "M_Glass_Dark",
+      "M_Metal_Painted"
+    ],
+    "size_m": [
+      4.04,
+      0.38,
+      6.52
+    ],
+    "ucx": 0
+  },
   "SM_Out_Facade_Corner": {
     "tris": 22,
     "materials": [
@@ -28,7 +43,7 @@
     "ucx": 0
   },
   "SM_Out_Facade_Entrance_8m": {
-    "tris": 1036,
+    "tris": 1054,
     "materials": [
       "M_Brick",
       "M_Concrete",

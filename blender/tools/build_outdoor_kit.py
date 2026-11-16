@@ -114,6 +114,17 @@ def facade_4m(name, coll):
     return mb.finish(name, coll)
 
 
+def facade_4m_blank(name, coll):
+    # Zoals facade_4m, maar zonder raam op het gelijkvloers: blinde baksteen voor graffiti/muurschilderingen.
+    mb = MB()
+    x0, x1 = 0.8, 3.2
+    mb.grid_panel([0, x0, x1, 4.0], [0, 0.9, 2.4, FLOOR + 0.9, FLOOR + 2.4, FH], -FT / 2, FT / 2,
+                  {(1, 3)}, "M_Brick", skip_outer=('-z', '+z'))
+    window_fill(mb, x0, x1, FLOOR + 0.9, FLOOR + 2.4)
+    facade_details(mb, 4.0)
+    return mb.finish(name, coll)
+
+
 def facade_corner(name, coll):
     # Hoekkolom 0,3 x 0,3 m (vult de buitenhoek waar twee gevels samenkomen); oorsprong = gridkruising.
     mb = MB()
@@ -183,7 +194,11 @@ def facade_entrance(name, coll):
     mb.box((PX0, yb, PH), (PX1, yb + HALL_D, PH + t), "M_Wall_Paint_White")
     mb.box((PX0 - t, yb, 0), (PX0, yb + HALL_D, PH), "M_Wall_Paint_White", skip=('-z', '+z'))
     mb.box((PX1, yb, 0), (PX1 + t, yb + HALL_D, PH), "M_Wall_Paint_White", skip=('-z', '+z'))
-    mb.box((PX0, yb + HALL_D, 0), (PX1, yb + HALL_D + t, PH), "M_Wall_Paint_White", skip=('-z', '+z', '-x', '+x'))
+    # achterwand met een doorgang (zelfde maat als de voordeuren) naar de gang erachter
+    yw0, yw1 = yb + HALL_D, yb + HALL_D + t
+    mb.box((PX0, yw0, 0), (DX0, yw1, PH), "M_Wall_Paint_White", skip=('-z', '+z', '-x'))
+    mb.box((DX1, yw0, 0), (PX1, yw1, PH), "M_Wall_Paint_White", skip=('-z', '+z', '+x'))
+    mb.box((DX0, yw0, DH), (DX1, yw1, PH), "M_Wall_Paint_White", skip=('+z',))
     mb.box((PX0 + 0.6, yb + 0.6, PH - 0.01), (PX1 - 0.6, yb + HALL_D - 0.6, PH), "M_Emissive_Light", skip=('+z',))
     facade_details(mb, L)
     root = mb.finish(name, coll)
@@ -322,6 +337,7 @@ def lamppost(name, coll):
 
 OUTDOOR = [
     ("SM_Out_Facade_4m", facade_4m),
+    ("SM_Out_Facade_4m_Blank", facade_4m_blank),
     ("SM_Out_Facade_Corner", facade_corner),
     ("SM_Out_Facade_Entrance_8m", facade_entrance),
     ("SM_Out_Ground_Paving_4x4", paving_4x4),
@@ -337,7 +353,7 @@ OUTDOOR = [
 ]
 
 # Wereldschaal-UV's: textures lopen door over gevelmodules en tegels.
-WORLD_UV = {"SM_Out_Facade_4m", "SM_Out_Facade_Corner", "SM_Out_Facade_Entrance_8m",
+WORLD_UV = {"SM_Out_Facade_4m", "SM_Out_Facade_4m_Blank", "SM_Out_Facade_Corner", "SM_Out_Facade_Entrance_8m",
             "SM_Out_Ground_Paving_4x4", "SM_Out_Ground_Grass_20x20"}
 
 

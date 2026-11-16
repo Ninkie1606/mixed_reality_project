@@ -27,7 +27,7 @@ from mathutils import Matrix, Vector
 
 KIT_SCRIPT = os.path.join(os.path.dirname(os.path.abspath(__file__)) if "__file__" in globals()
                           else r"C:\0_school\3deJaar\Mixed_Reality\project\blender\tools", "build_modular_kit.py")
-kit = {"__name__": "build_modular_kit"}
+kit = {"__name__": "build_modular_kit", "__file__": KIT_SCRIPT}
 exec(open(KIT_SCRIPT, encoding="utf-8").read(), kit)
 MB = kit["MB"]
 

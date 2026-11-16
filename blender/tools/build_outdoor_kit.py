@@ -183,7 +183,11 @@ def facade_entrance(name, coll):
     mb.box((PX0, yb, PH), (PX1, yb + HALL_D, PH + t), "M_Wall_Paint_White")
     mb.box((PX0 - t, yb, 0), (PX0, yb + HALL_D, PH), "M_Wall_Paint_White", skip=('-z', '+z'))
     mb.box((PX1, yb, 0), (PX1 + t, yb + HALL_D, PH), "M_Wall_Paint_White", skip=('-z', '+z'))
-    mb.box((PX0, yb + HALL_D, 0), (PX1, yb + HALL_D + t, PH), "M_Wall_Paint_White", skip=('-z', '+z', '-x', '+x'))
+    # achterwand met een doorgang (zelfde maat als de voordeuren) naar de gang erachter
+    yw0, yw1 = yb + HALL_D, yb + HALL_D + t
+    mb.box((PX0, yw0, 0), (DX0, yw1, PH), "M_Wall_Paint_White", skip=('-z', '+z', '-x'))
+    mb.box((DX1, yw0, 0), (PX1, yw1, PH), "M_Wall_Paint_White", skip=('-z', '+z', '+x'))
+    mb.box((DX0, yw0, DH), (DX1, yw1, PH), "M_Wall_Paint_White", skip=('+z',))
     mb.box((PX0 + 0.6, yb + 0.6, PH - 0.01), (PX1 - 0.6, yb + HALL_D - 0.6, PH), "M_Emissive_Light", skip=('+z',))
     facade_details(mb, L)
     root = mb.finish(name, coll)

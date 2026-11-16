@@ -27,7 +27,9 @@ import bmesh
 import bpy
 from mathutils import Vector
 
-REPO = r"C:\0_school\3deJaar\Mixed_Reality\project"
+# Repo-root = twee mappen boven dit script (blender/tools/..), zodat het op elke pc werkt.
+REPO = os.path.abspath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "..")) \
+    if "__file__" in globals() else r"C:\0_school\3deJaar\Mixed_Reality\project"
 BLEND_PATH = os.path.join(REPO, "blender", "models", "environment", "SM_Build_Kit.blend")
 EXPORT_DIR = os.path.join(REPO, "mixed_reality", "Assets", "Art", "Building")
 KIT_COLLECTION = "Build_Kit"

@@ -28,7 +28,7 @@
     "ucx": 0
   },
   "SM_Out_Facade_Entrance_8m": {
-    "tris": 1036,
+    "tris": 1054,
     "materials": [
       "M_Brick",
       "M_Concrete",

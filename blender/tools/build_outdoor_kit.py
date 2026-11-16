@@ -114,6 +114,17 @@ def facade_4m(name, coll):
     return mb.finish(name, coll)
 
 
+def facade_4m_blank(name, coll):
+    # Zoals facade_4m, maar zonder raam op het gelijkvloers: blinde baksteen voor graffiti/muurschilderingen.
+    mb = MB()
+    x0, x1 = 0.8, 3.2
+    mb.grid_panel([0, x0, x1, 4.0], [0, 0.9, 2.4, FLOOR + 0.9, FLOOR + 2.4, FH], -FT / 2, FT / 2,
+                  {(1, 3)}, "M_Brick", skip_outer=('-z', '+z'))
+    window_fill(mb, x0, x1, FLOOR + 0.9, FLOOR + 2.4)
+    facade_details(mb, 4.0)
+    return mb.finish(name, coll)
+
+
 def facade_corner(name, coll):
     # Hoekkolom 0,3 x 0,3 m (vult de buitenhoek waar twee gevels samenkomen); oorsprong = gridkruising.
     mb = MB()
@@ -326,6 +337,7 @@ def lamppost(name, coll):
 
 OUTDOOR = [
     ("SM_Out_Facade_4m", facade_4m),
+    ("SM_Out_Facade_4m_Blank", facade_4m_blank),
     ("SM_Out_Facade_Corner", facade_corner),
     ("SM_Out_Facade_Entrance_8m", facade_entrance),
     ("SM_Out_Ground_Paving_4x4", paving_4x4),
@@ -341,7 +353,7 @@ OUTDOOR = [
 ]
 
 # Wereldschaal-UV's: textures lopen door over gevelmodules en tegels.
-WORLD_UV = {"SM_Out_Facade_4m", "SM_Out_Facade_Corner", "SM_Out_Facade_Entrance_8m",
+WORLD_UV = {"SM_Out_Facade_4m", "SM_Out_Facade_4m_Blank", "SM_Out_Facade_Corner", "SM_Out_Facade_Entrance_8m",
             "SM_Out_Ground_Paving_4x4", "SM_Out_Ground_Grass_20x20"}
 
 

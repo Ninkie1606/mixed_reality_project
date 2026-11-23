@@ -99,6 +99,7 @@ namespace VRSchool.Editor
                 BuildCorridors(corridors, log);
                 BuildEndlessCorridor(corridors, log);
                 BuildRooms(rooms, log);
+                AddRoomSigns(rooms, log);
                 BuildPerimeterWall(Child(environment, "PerimeterWall"), log);
                 PlaceGraffiti(Child(environment, "Graffiti"), log);
                 AddInteriorZone(systems, log);
@@ -716,6 +717,58 @@ namespace VRSchool.Editor
             zone.FindProperty("outdoorVolume").objectReferenceValue = focus != null ? focus.GetComponent<Volume>() : null;
             zone.ApplyModifiedPropertiesWithoutUndo();
             log.AppendLine($"InteriorZone {box.size.x:0.0} x {box.size.z:0.0} m (focus {(focus != null ? "gekoppeld" : "NIET gevonden")})");
+        }
+
+        // Naambordjes boven de gangdeuren: de doelen op de telefoon noemen een lokaal ("lokaal A", "refter").
+        static readonly Dictionary<string, string> RoomSignNames = new()
+        {
+            { "Office", "Secretariaat" }, { "Classroom_A", "Lokaal A" }, { "Classroom_B", "Lokaal B" },
+            { "TeachersRoom", "Leraarskamer" }, { "Cafeteria", "Refter" }, { "Bathroom", "Toiletten" },
+            { "Library", "Bibliotheek" }, { "ComputerLab", "Computerlokaal" },
+        };
+
+        static void AddRoomSigns(Transform rooms, StringBuilder log)
+        {
+            var signs = Child(rooms, "RoomSigns");   // niet in de lokalen zelf: die zijn soms gedraaid, Box werkt in wereldassen
+            var count = 0;
+            foreach (var (roomName, label) in RoomSignNames)
+            {
+                var room = rooms.Find(roomName);
+                // De deur in de gangmuur: klasdeur of dubbele deur op de zuid- (z = 26) of noordmuur (z = 30,2) van de hoofdgang.
+                var door = room == null ? default : room.GetComponentsInChildren<Transform>(true)
+                    .Where(t => t.name is "SM_Build_Door_Classroom" or "SM_Build_Door_Double")
+                    .Select(t => Bounds(t.gameObject))
+                    .FirstOrDefault(b => Mathf.Abs(b.center.z - HallSouthZ) < 0.3f || Mathf.Abs(b.center.z - HallNorthZ) < 0.3f);
+                if (door.size == Vector3.zero)
+                {
+                    log.AppendLine($"!! Geen gangdeur gevonden voor {roomName}");
+                    continue;
+                }
+                var wallZ = Mathf.Abs(door.center.z - HallSouthZ) < 0.3f ? HallSouthZ : HallNorthZ;
+                var outward = wallZ == HallSouthZ ? 1f : -1f;            // naar de gang toe
+                var face = wallZ + outward * Face;
+                float x0 = door.center.x - 0.4f, x1 = door.center.x + 0.4f, y0 = 2.14f, y1 = 2.36f;
+                var sign = Box(signs, $"Sign_{roomName}",
+                    new Vector3(x0, y0, Mathf.Min(face, face + outward * 0.02f)),
+                    new Vector3(x1, y1, Mathf.Max(face, face + outward * 0.02f)), "Assets/Art/Materials/M_Plastic_Black.mat", false);
+
+                var textGo = new GameObject("Label");
+                textGo.transform.SetParent(signs, false);
+                textGo.transform.position = new Vector3(door.center.x, (y0 + y1) / 2f, face + outward * 0.022f);
+                textGo.transform.rotation = Quaternion.LookRotation(new Vector3(0f, 0f, -outward));   // TMP is leesbaar vanaf de kant waar zijn -z naar wijst
+                textGo.transform.SetParent(sign.transform, true);
+                var text = textGo.AddComponent<TMPro.TextMeshPro>();
+                text.rectTransform.sizeDelta = new Vector2(0.74f, 0.18f);
+                text.text = label;
+                text.color = new Color(1f, 0.97f, 0.9f);
+                text.alignment = TMPro.TextAlignmentOptions.Center;
+                text.textWrappingMode = TMPro.TextWrappingModes.NoWrap;
+                text.enableAutoSizing = true;
+                text.fontSizeMin = 0.1f;
+                text.fontSizeMax = 1.2f;
+                count++;
+            }
+            log.AppendLine($"Naambordjes: {count} boven de gangdeuren");
         }
 
         // Fase 2: de trigger begint in de inkomhal, voorbij het bereik van de opengedraaide voordeurbladen,

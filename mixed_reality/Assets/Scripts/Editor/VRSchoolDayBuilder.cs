@@ -67,7 +67,8 @@ namespace VRSchool.Editor
                     Msg("3_Agenda_Middag", "Agenda", Agenda, "12:05 · Middagpauze, refter"),
                     Msg("3_Lucas_KomZitten", "Lucas", Friend, "Kom je bij ons zitten?"),
                 },
-                Area(areas, "Area_Eetzaal_LegeTafel", new Vector3(-14.4f, 0f, 39.7f), new Vector2(2.4f, 3f)),
+                // tafel + stoelen aan beide kanten + de gang ernaast (x -12,75): daar sta je als je aanschuift
+                Area(areas, "Area_Eetzaal_LegeTafel", new Vector3(-14.2f, 0f, 39.7f), new Vector2(2.9f, 3f)),
                 new[]
                 {
                     Msg("3_Lucas_Anders", "Lucas", Friend, "Je bent de laatste tijd precies anders. Is er iets?"),
@@ -140,10 +141,11 @@ namespace VRSchool.Editor
         {
             var go = new GameObject(name);
             go.transform.SetParent(parent, false);
-            go.transform.position = floor + Vector3.up * 1.1f;
+            // Vloer tot plafond (3 m): ook wie op een stoel of tafel stapt (stapgrootte rig 0,5 m) telt mee.
+            go.transform.position = floor + Vector3.up * 1.5f;
             var box = go.AddComponent<BoxCollider>();
             box.isTrigger = true;
-            box.size = new Vector3(sizeXZ.x, 2.2f, sizeXZ.y);
+            box.size = new Vector3(sizeXZ.x, 3f, sizeXZ.y);
             return box;
         }
 

@@ -717,15 +717,16 @@ namespace VRSchool.Editor
             log.AppendLine($"InteriorZone {box.size.x:0.0} x {box.size.z:0.0} m (focus {(focus != null ? "gekoppeld" : "NIET gevonden")})");
         }
 
-        // Fase 2: de trigger ligt in de inkomhal, voorbij het bereik van de opengedraaide voordeurbladen.
-        const float TransitionStartZ = 17.6f, TransitionHalfX = 3.8f;
+        // Fase 2: de trigger begint in de inkomhal, voorbij het bereik van de opengedraaide voordeurbladen,
+        // en loopt door tot de achtergevel: wie met teleport over de inkomhal springt, zit er toch in.
+        const float TransitionStartZ = 17.6f;
 
         static void AddPhase2Transition(Transform systems, Transform shell, StringBuilder log)
         {
             var go = new GameObject("Phase2Transition");
             go.transform.SetParent(systems, false);
-            var min = new Vector3(-TransitionHalfX, 0f, TransitionStartZ);
-            var max = new Vector3(TransitionHalfX, Ceiling + 0.2f, LobbyBackZ);
+            var min = new Vector3(-SideX, 0f, TransitionStartZ);
+            var max = new Vector3(SideX, Ceiling + 0.2f, BackZ);
             go.transform.position = (min + max) / 2f;
             var box = go.AddComponent<BoxCollider>();
             box.isTrigger = true;
@@ -738,6 +739,9 @@ namespace VRSchool.Editor
                 .Where(l => l.gameObject.scene == scene)
                 .Where(l => l.type == LightType.Directional || l.transform.root.name is "Lighting" or "Environment")
                 .ToArray();
+            // Realtime: een Mixed-licht laat na het baken zijn weerkaatst licht in de lightmaps achter, ook als het uit staat.
+            foreach (var light in lights)
+                light.lightmapBakeType = LightmapBakeType.Realtime;
 
             var so = new SerializedObject(go.AddComponent<Gameplay.Phase2Transition>());
             SetArray(so.FindProperty("frontDoors"), doors);

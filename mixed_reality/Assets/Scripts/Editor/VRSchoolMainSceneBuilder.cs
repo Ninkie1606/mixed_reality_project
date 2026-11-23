@@ -102,6 +102,7 @@ namespace VRSchool.Editor
                 BuildPerimeterWall(Child(environment, "PerimeterWall"), log);
                 PlaceGraffiti(Child(environment, "Graffiti"), log);
                 AddInteriorZone(systems, log);
+                AddPhase2Transition(systems, shell, log);
 
                 EditorSceneManager.SaveScene(main, ScenePath);
                 AddToBuildSettings(log);
@@ -714,6 +715,43 @@ namespace VRSchool.Editor
             zone.FindProperty("outdoorVolume").objectReferenceValue = focus != null ? focus.GetComponent<Volume>() : null;
             zone.ApplyModifiedPropertiesWithoutUndo();
             log.AppendLine($"InteriorZone {box.size.x:0.0} x {box.size.z:0.0} m (focus {(focus != null ? "gekoppeld" : "NIET gevonden")})");
+        }
+
+        // Fase 2: de trigger ligt in de inkomhal, voorbij het bereik van de opengedraaide voordeurbladen.
+        const float TransitionStartZ = 17.6f, TransitionHalfX = 3.8f;
+
+        static void AddPhase2Transition(Transform systems, Transform shell, StringBuilder log)
+        {
+            var go = new GameObject("Phase2Transition");
+            go.transform.SetParent(systems, false);
+            var min = new Vector3(-TransitionHalfX, 0f, TransitionStartZ);
+            var max = new Vector3(TransitionHalfX, Ceiling + 0.2f, LobbyBackZ);
+            go.transform.position = (min + max) / 2f;
+            var box = go.AddComponent<BoxCollider>();
+            box.isTrigger = true;
+            box.size = max - min;
+
+            var entrance = shell.Cast<Transform>().First(t => t.name.StartsWith("SM_Out_Facade_Entrance"));
+            var doors = entrance.GetComponentsInChildren<SwingDoor>(true);
+            var scene = systems.gameObject.scene;
+            var lights = Object.FindObjectsByType<Light>(FindObjectsInactive.Include)
+                .Where(l => l.gameObject.scene == scene)
+                .Where(l => l.type == LightType.Directional || l.transform.root.name is "Lighting" or "Environment")
+                .ToArray();
+
+            var so = new SerializedObject(go.AddComponent<Gameplay.Phase2Transition>());
+            SetArray(so.FindProperty("frontDoors"), doors);
+            SetArray(so.FindProperty("outdoorLights"), lights);
+            so.FindProperty("interiorZone").objectReferenceValue = systems.GetComponentInChildren<InteriorZone>();
+            so.ApplyModifiedPropertiesWithoutUndo();
+            log.AppendLine($"Fase 2-overgang: {doors.Length} voordeurbladen, {lights.Length} buitenlichten");
+        }
+
+        static void SetArray(SerializedProperty array, Object[] items)
+        {
+            array.arraySize = items.Length;
+            for (var i = 0; i < items.Length; i++)
+                array.GetArrayElementAtIndex(i).objectReferenceValue = items[i];
         }
 
         static void AddToBuildSettings(StringBuilder log)

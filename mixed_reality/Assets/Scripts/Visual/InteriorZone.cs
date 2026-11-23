@@ -30,8 +30,16 @@ namespace VRSchool.Visual
         Color fogColorOutside;
         float fogStartOutside, fogEndOutside;
         bool? inside;
+        bool forcedInside;
 
         public bool IsInside => inside == true;
+
+        /// <summary>Vanaf nu telt overal als binnen (na de Fase 2-overgang: geen buitenfocus meer, zwarte mist ook in de inkomhal).</summary>
+        public void ForceInside()
+        {
+            forcedInside = true;
+            inside = null;
+        }
 
         void Awake()
         {
@@ -53,7 +61,7 @@ namespace VRSchool.Visual
                 return;
 
             var position = cam.transform.position;
-            var nowInside = zones.Any(z => z.bounds.Contains(position));
+            var nowInside = forcedInside || zones.Any(z => z.bounds.Contains(position));
             if (nowInside == inside)
                 return;
             inside = nowInside;

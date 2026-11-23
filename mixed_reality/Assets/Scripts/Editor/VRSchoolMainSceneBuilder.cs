@@ -103,6 +103,7 @@ namespace VRSchool.Editor
                 PlaceGraffiti(Child(environment, "Graffiti"), log);
                 AddInteriorZone(systems, log);
                 AddPhase2Transition(systems, shell, log);
+                VRSchoolDayBuilder.Add(systems, log);
 
                 EditorSceneManager.SaveScene(main, ScenePath);
                 AddToBuildSettings(log);
